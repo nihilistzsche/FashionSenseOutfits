@@ -86,7 +86,7 @@ namespace FashionSenseOutfits
             var isValid = IsValid(currentOutfitID);
             if (!isValid.Item1)
             {
-                Monitor.Log($"Given outfit {currentOutfitID ?? "(null)"} is invalid.");
+                Monitor.Log($"Given outfit {currentOutfitID} is invalid.");
                 return;
             }
             else
