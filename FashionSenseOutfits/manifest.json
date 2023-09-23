@@ -9,5 +9,5 @@
   "Dependencies": [
     { "UniqueID": "PeacefulEnd.FashionSense", "IsRequired":  true }
   ],
-  "UpdateKeys": []
+  "UpdateKeys": [ "Nexus:18384" ]
 }
