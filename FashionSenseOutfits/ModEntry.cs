@@ -24,6 +24,7 @@ namespace FashionSenseOutfits
             helper.Events.GameLoop.GameLaunched += OnGameLaunched;
             helper.Events.GameLoop.SaveLoaded += OnSaveLoaded;
             helper.Events.GameLoop.DayStarted += OnDayStarted;
+            helper.Events.Player.Warped += OnWarped;
             helper.Events.Content.AssetRequested += OnAssetRequested;
             helper.Events.Content.AssetReady += OnAssetReady;
         }
@@ -45,15 +46,19 @@ namespace FashionSenseOutfits
             fsApi = Helper.ModRegistry.GetApi<IApi>("PeacefulEnd.FashionSense");
         }
 
-        private void OnSaveLoaded(object? sender, SaveLoadedEventArgs e)
+        private void LoadData(dynamic e)
         {
-            data = Game1.content.Load<Dictionary<string, ModData>>("nihilistzsche.FashionSenseOutfits/Outfits");
+            if (e.GetType().GetProperty("IsLocalPlayer") == null || e.IsLocalPlayer)
+            {
+                data = Game1.content.Load<Dictionary<string, ModData>>("nihilistzsche.FashionSenseOutfits/Outfits");
+            }
         }
 
-        private void OnDayStarted(object? sender, DayStartedEventArgs e)
-        {
-            data = Game1.content.Load<Dictionary<string, ModData>>("nihilistzsche.FashionSenseOutfits/Outfits");
-        }
+        private void OnSaveLoaded(object? sender, SaveLoadedEventArgs e) => LoadData(e);
+
+        private void OnDayStarted(object? sender, DayStartedEventArgs e) => LoadData(e);
+
+        private void OnWarped(object? sender, WarpedEventArgs e) => LoadData(e);
 
         private void OnAssetRequested(object? sender, AssetRequestedEventArgs e)
         {
