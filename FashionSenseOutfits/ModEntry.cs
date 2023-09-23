@@ -34,7 +34,6 @@ namespace FashionSenseOutfits
             if (outfitID != null && outfitID != "")
             {
                 var outfitIDs = fsApi.GetOutfitIds().Value;
-                outfitIDs.ForEach(x => Monitor.Log($"Found outfit with ID {x}"));
                 var correctedID = outfitIDs.Where(x => x.Equals(outfitID, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
                 return (correctedID != null, correctedID);
             }
@@ -50,6 +49,7 @@ namespace FashionSenseOutfits
         {
             if (e.GetType().GetProperty("IsLocalPlayer") == null || e.IsLocalPlayer)
             {
+                Helper.GameContent.InvalidateCache("nihilistzsche.FashionSenseOutfits/Outfits");
                 data = Game1.content.Load<Dictionary<string, ModData>>("nihilistzsche.FashionSenseOutfits/Outfits");
             }
         }
@@ -87,16 +87,14 @@ namespace FashionSenseOutfits
         {
             var currentOutfitID = data["CurrentOutfit"].OutfitID;
             var CurrentOutfitPair = fsApi.GetCurrentOutfitId();
-            Monitor.Log($"Checking outfit {currentOutfitID}...");
             var (Valid, CorrectedID) = IsValid(currentOutfitID);
             if (!Valid)
             {
                 Monitor.Log($"Given outfit {currentOutfitID} is invalid.");
                 return;
             }
-            else
+            else if (currentOutfitID != CorrectedID)
             {
-                Monitor.Log($"Updating outfitID from {currentOutfitID} to {CorrectedID}.");
                 currentOutfitID = CorrectedID;
             }
             if (CurrentOutfitPair.Key && currentOutfitID == CurrentOutfitPair.Value)
