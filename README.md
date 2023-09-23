@@ -1,11 +1,9 @@
 # FashionSenseOutfits
- Content Patcher Target to set the current Fashion Sense Outfit in Stardew Valley
-
-FashionSenseOutfits adds a Content Patcher endpoint at nihilistzsche.FashionSenseOutfits/Outfits that you can target to change the current Fashion Sense outfit based on Content Patcher conditions.
+FashionSenseOutfits adds a Content Patcher endpoint at nihilistzsche.FashionSenseOutfits/Outfits that you can target to change the current Fashion Sense outfit based on Content Patcher conditions and tokens.
 
 It will do nothing on its own, you must have an additional Content Patcher content pack targeting the "nihilistzsche.FashionSenseOutfits/Outfits" endpoint. 
 
-As of now it will only be able to change the outfit at the start of a new day, I may add additional functionality later to add more granual control of the outfit.
+As of now it will only be able to change the outfit at the start of a new day, I may add additional functionality later to add more gradual control of the outfit.
 
 The following example shows how to use it to set a seasonal outfit with the name "Spring", "Summer", "Fall", or "Winter".
 Create a new mod folder.
