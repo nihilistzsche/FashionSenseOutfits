@@ -28,13 +28,13 @@ namespace FashionSenseOutfits
             helper.Events.Content.AssetReady += OnAssetReady;
         }
 
-        private (bool, string) IsValid(string outfitID)
+        private (bool Valid, string CorrectedID) IsValid(string outfitID)
         {
-            if (outfitID != null)
+            if (outfitID != null && outfitID != "")
             {
-                var outfitIDs = fsApi.GetOutfitIds();
-                outfitIDs.Value.ForEach(x => Monitor.Log($"Found outfit with ID {x}"));
-                var correctedID = outfitIDs.Value.Where(x => x.Equals(outfitID, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+                var outfitIDs = fsApi.GetOutfitIds().Value;
+                outfitIDs.ForEach(x => Monitor.Log($"Found outfit with ID {x}"));
+                var correctedID = outfitIDs.Where(x => x.Equals(outfitID, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
                 return (correctedID != null, correctedID);
             }
             return (false, null);
@@ -83,16 +83,16 @@ namespace FashionSenseOutfits
             var currentOutfitID = data["CurrentOutfit"].OutfitID;
             var CurrentOutfitPair = fsApi.GetCurrentOutfitId();
             Monitor.Log($"Checking outfit {currentOutfitID}...");
-            var isValid = IsValid(currentOutfitID);
-            if (!isValid.Item1)
+            var (Valid, CorrectedID) = IsValid(currentOutfitID);
+            if (!Valid)
             {
                 Monitor.Log($"Given outfit {currentOutfitID} is invalid.");
                 return;
             }
             else
             {
-                Monitor.Log($"Updating outfitID from {currentOutfitID} to {isValid.Item2}.");
-                currentOutfitID = isValid.Item2;
+                Monitor.Log($"Updating outfitID from {currentOutfitID} to {CorrectedID}.");
+                currentOutfitID = CorrectedID;
             }
             if (CurrentOutfitPair.Key && currentOutfitID == CurrentOutfitPair.Value)
             {
