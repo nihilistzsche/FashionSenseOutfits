@@ -3,7 +3,7 @@ FashionSenseOutfits adds a Content Patcher endpoint at nihilistzsche.FashionSens
 
 It will do nothing on its own, you must have an additional Content Patcher content pack targeting the "nihilistzsche.FashionSenseOutfits/Outfits" endpoint. 
 
-As of now it will only be able to change the outfit at the start of a new day, I may add additional functionality later to add more gradual control of the outfit.
+You can change your outfit at the start of a new day, when traveling to a new location, or at a certain time (down to the hour).
 
 The following example shows how to use it to set a seasonal outfit with the name "Spring", "Summer", "Fall", or "Winter".
 Create a new mod folder.
