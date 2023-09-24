@@ -20,10 +20,14 @@ namespace FashionSenseOutfits
     using System;
     using System.Collections.Generic;
     using System.Linq;
+
     using FashionSense.Framework.Interfaces.API;
+
     using Models;
+
     using StardewModdingAPI;
     using StardewModdingAPI.Events;
+
     using StardewValley;
 
     using OutfitDataModel = System.Collections.Generic.Dictionary<string, Models.OutfitData>;
@@ -70,7 +74,7 @@ namespace FashionSenseOutfits
             if (e.GetType().GetProperty("IsLocalPlayer") == null || e.IsLocalPlayer)
             {
                 Helper.GameContent.InvalidateCache(AssetName);
-                _data = Game1.content.Load<Dictionary<string, OutfitData>>(AssetName);
+                _data = Game1.content.Load<OutfitDataModel>(AssetName);
             }
         }
 
@@ -88,38 +92,34 @@ namespace FashionSenseOutfits
             }
         }
 
+        private static readonly OutfitDataModel BaseData = new()
+        {
+            ["CurrentOutfit"] = new OutfitData { OutfitId = string.Empty },
+        };
+
         // ReSharper disable once MemberCanBeMadeStatic.Local
         private void OnAssetRequested(object sender, AssetRequestedEventArgs e)
         {
-            if (e.Name.IsEquivalentTo(AssetName))
-            {
-                e.LoadFrom(
-                    () => new OutfitDataModel
-                    {
-                        ["CurrentOutfit"] = new() { OutfitId = string.Empty },
-                    },
-                    AssetLoadPriority.Medium);
-            }
+            if (!e.Name.IsEquivalentTo(AssetName)) return;
+            e.LoadFrom(
+                () => BaseData,
+                AssetLoadPriority.Medium);
         }
 
         private void OnAssetReady(object sender, AssetReadyEventArgs e)
         {
-            // ReSharper disable once InvertIf
-            if (e.Name.IsEquivalentTo(AssetName))
-            {
-                _data = Game1.content.Load<OutfitDataModel>(AssetName);
-                UpdateOutfit();
-            }
+            if (!e.Name.IsEquivalentTo(AssetName)) return;
+            UpdateOutfit();
         }
 
         private void UpdateOutfit()
         {
-            var currentOutfitId = _data["CurrentOutfit"].OutfitId;
+            var requestedOutfitId = _data["CurrentOutfit"].OutfitId;
             var currentOutfitPair = _fsApi.GetCurrentOutfitId();
-            var (valid, correctedId) = IsValid(currentOutfitId);
+            var (valid, correctedId) = IsValid(requestedOutfitId);
             if (!valid)
             {
-                Monitor.Log($"Given outfit with ID {currentOutfitId} is invalid.");
+                Monitor.Log($"Given outfit with ID {requestedOutfitId} is invalid.");
                 return;
             }
 
