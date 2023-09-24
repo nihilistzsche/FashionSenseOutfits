@@ -7,7 +7,7 @@ You can change your outfit at the start of a new day, when traveling to a new lo
 
 You can see an example mod showing how to set a seasonal outfit [here](https://github.com/nihilistzsche/-CP-Seasonal-Fashion-Sense-Outfits), which you can download and modify as necessary.
 
-Visit the Content Patcher website for more information on tokens, EditData actions, and conditions to see what you can do.
+Visit the [Content Patcher website](https://github.com/Pathoschild/StardewMods/tree/develop/ContentPatcher/docs/author-guide) for more information on tokens, EditData actions, and conditions to see what you can do.
 
 The OutfitID is matched using case insensitivity, and will unpredictably select one if you have outfits with the same name but different cases.
 I think that is a rare enough situation that I can live with the caveat.
