@@ -17,6 +17,6 @@ namespace FashionSenseOutfits.Models
 {
     internal class OutfitData
     {
-        public string OutfitID { get; set; }
+        public string OutfitId { get; set; }
     }
 }

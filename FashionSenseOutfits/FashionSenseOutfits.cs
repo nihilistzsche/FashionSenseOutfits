@@ -13,6 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+
+
 namespace FashionSenseOutfits
 {
     using System;
@@ -24,17 +26,22 @@ namespace FashionSenseOutfits
     using StardewModdingAPI.Events;
     using StardewValley;
 
+    using OutfitDataModel = System.Collections.Generic.Dictionary<string, Models.OutfitData>;
+
     /// <summary>The mod entry point.</summary>
+    // ReSharper disable once UnusedMember.Global
     public class FashionSenseOutfits : Mod
     {
+        private const string AssetName = "nihilistzsche.FashionSenseOutfits/Outfits";
         private static IApi _fsApi;
-        private static Dictionary<string, OutfitData> _data;
+        private static OutfitDataModel _data;
 
         public override void Entry(IModHelper helper)
         {
             helper.Events.GameLoop.GameLaunched += OnGameLaunched;
             helper.Events.GameLoop.SaveLoaded += OnSaveLoaded;
             helper.Events.GameLoop.DayStarted += OnDayStarted;
+            helper.Events.GameLoop.TimeChanged += OnTimeChanged;
             helper.Events.Player.Warped += OnWarped;
             helper.Events.Content.AssetRequested += OnAssetRequested;
             helper.Events.Content.AssetReady += OnAssetReady;
@@ -62,8 +69,8 @@ namespace FashionSenseOutfits
             // ReSharper disable once InvertIf
             if (e.GetType().GetProperty("IsLocalPlayer") == null || e.IsLocalPlayer)
             {
-                Helper.GameContent.InvalidateCache("nihilistzsche.FashionSenseOutfits/Outfits");
-                _data = Game1.content.Load<Dictionary<string, OutfitData>>("nihilistzsche.FashionSenseOutfits/Outfits");
+                Helper.GameContent.InvalidateCache(AssetName);
+                _data = Game1.content.Load<Dictionary<string, OutfitData>>(AssetName);
             }
         }
 
@@ -73,15 +80,23 @@ namespace FashionSenseOutfits
 
         private void OnWarped(object sender, WarpedEventArgs e) => LoadData(e);
 
+        private void OnTimeChanged(object sender, TimeChangedEventArgs e)
+        {
+            if (e.NewTime % 100 == 0)
+            {
+                LoadData(e);
+            }
+        }
+
         // ReSharper disable once MemberCanBeMadeStatic.Local
         private void OnAssetRequested(object sender, AssetRequestedEventArgs e)
         {
-            if (e.Name.IsEquivalentTo("nihilistzsche.FashionSenseOutfits/Outfits"))
+            if (e.Name.IsEquivalentTo(AssetName))
             {
                 e.LoadFrom(
-                    () => new Dictionary<string, OutfitData>
+                    () => new OutfitDataModel
                     {
-                        ["CurrentOutfit"] = new() { OutfitID = string.Empty },
+                        ["CurrentOutfit"] = new() { OutfitId = string.Empty },
                     },
                     AssetLoadPriority.Medium);
             }
@@ -90,16 +105,16 @@ namespace FashionSenseOutfits
         private void OnAssetReady(object sender, AssetReadyEventArgs e)
         {
             // ReSharper disable once InvertIf
-            if (e.Name.IsEquivalentTo("nihilistzsche.FashionSenseOutfits/Outfits"))
+            if (e.Name.IsEquivalentTo(AssetName))
             {
-                _data = Game1.content.Load<Dictionary<string, OutfitData>>("nihilistzsche.FashionSenseOutfits/Outfits");
+                _data = Game1.content.Load<OutfitDataModel>(AssetName);
                 UpdateOutfit();
             }
         }
 
         private void UpdateOutfit()
         {
-            var currentOutfitId = _data["CurrentOutfit"].OutfitID;
+            var currentOutfitId = _data["CurrentOutfit"].OutfitId;
             var currentOutfitPair = _fsApi.GetCurrentOutfitId();
             var (valid, correctedId) = IsValid(currentOutfitId);
             if (!valid)
