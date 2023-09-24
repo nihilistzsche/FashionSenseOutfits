@@ -92,28 +92,18 @@ namespace FashionSenseOutfits
             }
         }
 
-        private static readonly OutfitDataModel BaseData = new()
-        {
-            ["CurrentOutfit"] = new OutfitData { OutfitId = string.Empty },
-        };
-
         // ReSharper disable once MemberCanBeMadeStatic.Local
         private void OnAssetRequested(object sender, AssetRequestedEventArgs e)
         {
             if (!e.Name.IsEquivalentTo(AssetName)) return;
             e.LoadFrom(
-                () => BaseData,
+                () => new OutfitData { OutfitId = string.Empty },
                 AssetLoadPriority.Medium);
         }
 
         private void OnAssetReady(object sender, AssetReadyEventArgs e)
         {
             if (!e.Name.IsEquivalentTo(AssetName)) return;
-            UpdateOutfit();
-        }
-
-        private void UpdateOutfit()
-        {
             var requestedOutfitId = _data["CurrentOutfit"].OutfitId;
             var currentOutfitPair = _fsApi.GetCurrentOutfitId();
             var (valid, correctedId) = IsValid(requestedOutfitId);
