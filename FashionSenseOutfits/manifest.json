@@ -1,7 +1,7 @@
 {
   "Name": "FashionSenseOutfits",
   "Author": "nihilistzsche",
-  "Version": "1.0.2",
+  "Version": "1.0.3",
   "Description": "Adds a Content Patcher target to change the current FashionSense outfit through the FashionSense API.",
   "UniqueID": "nihilistzsche.FashionSenseOutfits",
   "EntryDll": "FashionSenseOutfits.dll",
