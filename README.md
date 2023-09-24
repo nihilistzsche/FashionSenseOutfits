@@ -8,7 +8,7 @@ You can change your outfit at the start of a new day, when traveling to a new lo
 The following example shows how to use it to set a seasonal outfit with the name "Spring", "Summer", "Fall", or "Winter".
 Create a new mod folder.
 Add a manifest.json file with the following template:
-```json
+```yaml
 {
    "Name": "[CP] <Your mod name>",
    "Author": "<Your name>",
@@ -29,7 +29,7 @@ Add a manifest.json file with the following template:
 Replace everything that is inside < > with the proper information, do not have any < or > in the file.
 
 Then add a content.json file that targets nihilistzsche.FashionSenseOutfits/Outfits, using the following template, which will use a seasonal outfit with the name of the current season (spring, summer, fall, winter):
-```json
+```yaml
 {
   "Format": "1.29.0",
   "Changes": [
