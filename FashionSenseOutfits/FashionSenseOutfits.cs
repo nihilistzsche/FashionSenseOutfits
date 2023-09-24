@@ -18,21 +18,17 @@ namespace FashionSenseOutfits
     using System;
     using System.Collections.Generic;
     using System.Linq;
-
     using FashionSense.Framework.Interfaces.API;
-
     using Models;
-
     using StardewModdingAPI;
     using StardewModdingAPI.Events;
-
     using StardewValley;
 
     /// <summary>The mod entry point.</summary>
-    public class ModEntry : Mod
+    public class FashionSenseOutfits : Mod
     {
         private static IApi _fsApi;
-        private static Dictionary<string, ModData> _data;
+        private static Dictionary<string, OutfitData> _data;
 
         public override void Entry(IModHelper helper)
         {
@@ -67,7 +63,7 @@ namespace FashionSenseOutfits
             if (e.GetType().GetProperty("IsLocalPlayer") == null || e.IsLocalPlayer)
             {
                 Helper.GameContent.InvalidateCache("nihilistzsche.FashionSenseOutfits/Outfits");
-                _data = Game1.content.Load<Dictionary<string, ModData>>("nihilistzsche.FashionSenseOutfits/Outfits");
+                _data = Game1.content.Load<Dictionary<string, OutfitData>>("nihilistzsche.FashionSenseOutfits/Outfits");
             }
         }
 
@@ -83,10 +79,10 @@ namespace FashionSenseOutfits
             if (e.Name.IsEquivalentTo("nihilistzsche.FashionSenseOutfits/Outfits"))
             {
                 e.LoadFrom(
-                    () => new Dictionary<string, ModData>
-                        {
-                            ["CurrentOutfit"] = new () { OutfitID = string.Empty },
-                        },
+                    () => new Dictionary<string, OutfitData>
+                    {
+                        ["CurrentOutfit"] = new() { OutfitID = string.Empty },
+                    },
                     AssetLoadPriority.Medium);
             }
         }
@@ -96,7 +92,7 @@ namespace FashionSenseOutfits
             // ReSharper disable once InvertIf
             if (e.Name.IsEquivalentTo("nihilistzsche.FashionSenseOutfits/Outfits"))
             {
-                _data = Game1.content.Load<Dictionary<string, ModData>>("nihilistzsche.FashionSenseOutfits/Outfits");
+                _data = Game1.content.Load<Dictionary<string, OutfitData>>("nihilistzsche.FashionSenseOutfits/Outfits");
                 UpdateOutfit();
             }
         }

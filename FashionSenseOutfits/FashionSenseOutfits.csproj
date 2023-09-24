@@ -43,8 +43,8 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Models\ModData.cs" />
-    <Compile Include="ModEntry.cs" />
+    <Compile Include="Models\OutfitData.cs" />
+    <Compile Include="FashionSenseOutfits.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
