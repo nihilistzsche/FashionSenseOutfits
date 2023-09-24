@@ -5,46 +5,8 @@ It will do nothing on its own, you must have an additional Content Patcher conte
 
 You can change your outfit at the start of a new day, when traveling to a new location, or at a certain time (down to the hour).
 
-The following example shows how to use it to set a seasonal outfit with the name "Spring", "Summer", "Fall", or "Winter".
-Create a new mod folder.
-Add a manifest.json file with the following template:
-```json
-{
-    "Name": "[CP] <Your mod name>",
-    "Author": "<Your name>",
-    "Version": "0.1.1",
-    "Description": "<Description of what the mod does>",
-    "UniqueID": "<Your name>.<Mod name>",
-    "MinimumApiVersion": "3.13.0",
-    "UpdateKeys": [],
-    "ContentPackFor": {
-        "UniqueID": "Pathoschild.ContentPatcher",
-        "MinimumVersion": "1.3.1"
-    },
-    "Dependencies": [
-	    { "UniqueID": "nihilistzsche.FashionSenseOutfits", "IsRequired": true }
-    ]
-}
-```
-Replace everything that is inside < > with the proper information, do not have any < or > in the file.
+You can see an example mod showing how to set a seasonal outfit [here](https://github.com/nihilistzsche/-CP-Seasonal-Fashion-Sense-Outfits), which you can download and modify as necessary.
 
-Then add a content.json file that targets nihilistzsche.FashionSenseOutfits/Outfits, using the following template, which will use a seasonal outfit with the name of the current season (spring, summer, fall, winter):
-```json
-{
-    "Format": "1.29.0",
-    "Changes": [
-        {
-            "Action": "EditData",
-            "Target": "nihilistzsche.FashionSenseOutfits/Outfits",
-            "Fields": {
-                "CurrentOutfit": {
-          	        "OutfitID": "{{Season}}"
-                }
-	        }
-	    }
-    ]
-}
-```
 Visit the Content Patcher website for more information on tokens, EditData actions, and conditions to see what you can do.
 
 The OutfitID is matched using case insensitivity, and will unpredictably select one if you have outfits with the same name but different cases.
