@@ -114,10 +114,12 @@ namespace FashionSenseOutfits
                 AssetLoadPriority.Medium);
         }
 
+        private string RequestedOutfitId => _data["CurrentOutfit"].OutfitId;
+
         private void OnAssetReady(object sender, AssetReadyEventArgs e)
         {
             if (!e.Name.IsEquivalentTo(AssetName)) return;
-            var requestedOutfitId = _data["CurrentOutfit"].OutfitId;
+            var requestedOutfitId = RequestedOutfitId;
             var currentOutfitPair = _fsApi.GetCurrentOutfitId();
             var (valid, correctedId) = IsValid(requestedOutfitId);
             if (!valid)
