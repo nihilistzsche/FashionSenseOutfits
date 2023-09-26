@@ -22,6 +22,7 @@ namespace FashionSenseOutfits
     using System.Linq;
 
     using FashionSense.Framework.Interfaces.API;
+    using ContentPatcher;
 
     using Models;
 
@@ -38,6 +39,7 @@ namespace FashionSenseOutfits
     {
         private const string AssetName = "nihilistzsche.FashionSenseOutfits/Outfits";
         private static IApi _fsApi;
+        private static IContentPatcherAPI _cpApi;
         private static OutfitDataModel _data;
 
         public override void Entry(IModHelper helper)
@@ -66,6 +68,17 @@ namespace FashionSenseOutfits
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
         {
             _fsApi = Helper.ModRegistry.GetApi<IApi>("PeacefulEnd.FashionSense");
+            _cpApi = Helper.ModRegistry.GetApi<IContentPatcherAPI>("Pathoschild.ContentPatcher");
+            _cpApi.RegisterToken(this.ModManifest, "CurrentOutfit", () =>
+            {
+                if (!Context.IsWorldReady)
+                {
+                    return null;
+                }
+
+                var outfitPair = _fsApi.GetCurrentOutfitId();
+                return new[] { outfitPair.Key ? outfitPair.Value : null };
+            });
         }
 
         private void LoadData(dynamic e)

@@ -44,6 +44,12 @@
     <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.ValueTuple.4.5.0\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
     </Reference>
+    <Reference Include="$(GameModsPath)\FashionSense\FashionSense.dll">
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="$(GameModsPath)\ContentPatcher\ContentPatcher.dll">
+      <Private>false</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Models\OutfitData.cs" />
@@ -53,11 +59,6 @@
   <ItemGroup>
     <None Include="manifest.json" />
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="$(GameModsPath)\FashionSense\FashionSense.dll">
-      <Private>false</Private>
-    </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Pathoschild.Stardew.ModBuildConfig.4.1.1\build\Pathoschild.Stardew.ModBuildConfig.targets" Condition="Exists('..\packages\Pathoschild.Stardew.ModBuildConfig.4.1.1\build\Pathoschild.Stardew.ModBuildConfig.targets')" />

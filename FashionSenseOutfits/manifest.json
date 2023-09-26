@@ -7,7 +7,8 @@
   "EntryDll": "FashionSenseOutfits.dll",
   "MinimumApiVersion": "3.0.0",
   "Dependencies": [
-    { "UniqueID": "PeacefulEnd.FashionSense", "IsRequired":  true }
+    { "UniqueID": "PeacefulEnd.FashionSense", "IsRequired": true },
+    { "UniqueID": "Pathoschild.ContentPatcher", "IsRequired": true }
   ],
   "UpdateKeys": [ "Nexus:18384" ]
 }
