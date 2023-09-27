@@ -37,7 +37,7 @@ namespace FashionSenseOutfits
     // ReSharper disable once UnusedMember.Global
     public class FashionSenseOutfits : Mod
     {
-        private const string AssetName = "nihilistzsche.FashionSenseOutfits/Outfits";
+        private const string AssetName = "nihilistzsche.FashionSenseOutfits.Old/Outfits";
         private static IApi _fsApi;
         private static IContentPatcherAPI _cpApi;
         private static OutfitDataModel _data;
