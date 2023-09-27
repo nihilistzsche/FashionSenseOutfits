@@ -53,15 +53,15 @@ namespace FashionSenseOutfits
             helper.Events.Content.AssetReady += OnAssetReady;
         }
 
-        private static (bool Valid, string CorrectedID) IsValid(string outfitId)
+        private static (bool Valid, string CorrectedID) IsValid(string requestedOutfitId)
         {
-            if (string.IsNullOrEmpty(outfitId))
+            if (string.IsNullOrEmpty(requestedOutfitId))
             {
                 return (false, null);
             }
 
             var outfitIDs = _fsApi.GetOutfitIds().Value;
-            var correctedId = outfitIDs.FirstOrDefault(x => x.Equals(outfitId, StringComparison.OrdinalIgnoreCase));
+            var correctedId = outfitIDs.FirstOrDefault(outfitId => outfitId.Equals(requestedOutfitId, StringComparison.OrdinalIgnoreCase));
             return (correctedId != null, correctedId);
         }
 
