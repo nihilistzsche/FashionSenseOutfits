@@ -41,6 +41,7 @@ namespace FashionSenseOutfits
         private static IApi _fsApi;
         private static IContentPatcherAPI _cpApi;
         private static OutfitDataModel _data;
+        private static Event _lastEvent;
 
         public override void Entry(IModHelper helper)
         {
@@ -48,6 +49,7 @@ namespace FashionSenseOutfits
             helper.Events.GameLoop.SaveLoaded += OnSaveLoaded;
             helper.Events.GameLoop.DayStarted += OnDayStarted;
             helper.Events.GameLoop.TimeChanged += OnTimeChanged;
+            helper.Events.GameLoop.UpdateTicked += OnUpdateTicked;
             helper.Events.Player.Warped += OnWarped;
             helper.Events.Content.AssetRequested += OnAssetRequested;
             helper.Events.Content.AssetReady += OnAssetReady;
@@ -103,6 +105,16 @@ namespace FashionSenseOutfits
             {
                 LoadData(e);
             }
+        }
+
+        private void OnUpdateTicked(object sender, UpdateTickedEventArgs e)
+        {
+            if (_lastEvent != null && Game1.CurrentEvent == null)
+            {
+                LoadData(e);
+            }
+
+            _lastEvent = Game1.CurrentEvent;
         }
 
         // ReSharper disable once MemberCanBeMadeStatic.Local
