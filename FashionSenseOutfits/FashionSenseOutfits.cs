@@ -69,7 +69,7 @@ namespace FashionSenseOutfits
         {
             _fsApi = Helper.ModRegistry.GetApi<IApi>("PeacefulEnd.FashionSense");
             _cpApi = Helper.ModRegistry.GetApi<IContentPatcherAPI>("Pathoschild.ContentPatcher");
-            _cpApi.RegisterToken(this.ModManifest, "CurrentOutfit", () =>
+            _cpApi?.RegisterToken(this.ModManifest, "CurrentOutfit", () =>
             {
                 if (!Context.IsWorldReady)
                 {
