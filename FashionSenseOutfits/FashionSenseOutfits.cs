@@ -117,7 +117,7 @@ namespace FashionSenseOutfits
                 AssetLoadPriority.Medium);
         }
 
-        private string RequestedOutfitId => _data["RequestedOutfit"].OutfitId;
+        private string RequestedOutfitId => _data?["RequestedOutfit"].OutfitId;
 
         private void OnAssetReady(object sender, AssetReadyEventArgs e)
         {
