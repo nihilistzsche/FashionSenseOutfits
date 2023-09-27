@@ -105,12 +105,17 @@ namespace FashionSenseOutfits
             }
         }
 
+        private static readonly OutfitDataModel BaseData = new()
+        {
+            ["CurrentOutfit"] = new OutfitData { OutfitId = string.Empty },
+        };
+
         // ReSharper disable once MemberCanBeMadeStatic.Local
         private void OnAssetRequested(object sender, AssetRequestedEventArgs e)
         {
             if (!e.Name.IsEquivalentTo(AssetName)) return;
             e.LoadFrom(
-                () => new OutfitData { OutfitId = string.Empty },
+                () => BaseData,
                 AssetLoadPriority.Medium);
         }
 
