@@ -29,61 +29,66 @@ open StardewModdingAPI.Events
 
 open StardewValley
 
+type private OutfitDataModel = Dictionary<string, OutfitData>
 
 type public FashionSenseOutfits() =
     inherit Mod()
-    let AssetName: System.String = "nihilistzsche.FashionSenseOutfits/Outfits"
+    let AssetName: string = "nihilistzsche.FashionSenseOutfits/Outfits"
     let mutable _fsApi: IApi = null
     let mutable _cpApi: IContentPatcherAPI = null
-    let mutable _data: Dictionary<System.String, OutfitData> = null
-    let mutable _lastEvent: Event = null
 
-    let IsValid(requestedOutfitId: System.String): bool*System.String =
-        if System.String.IsNullOrEmpty(requestedOutfitId) then
+    let IsValid(requestedOutfitId: string): bool*string =
+        if String.IsNullOrEmpty(requestedOutfitId) then
             (false, null)
         else
             let outfitIds = _fsApi.GetOutfitIds().Value
             let correctedId = outfitIds.FirstOrDefault(fun outfitId -> outfitId.Equals(requestedOutfitId, StringComparison.OrdinalIgnoreCase))
             (correctedId <> null, correctedId)
-
+            
+    member val private Data: OutfitDataModel = null with get, set
+            
     member private this.LoadData(e: System.Object) =
         let isLocal = e.GetType().GetProperty("IsLocalPlayer")
         if isLocal = null || isLocal.GetValue(e) :?> bool then
             this.Helper.GameContent.InvalidateCache(AssetName) |> ignore
-            _data <- Game1.content.Load<Dictionary<System.String, OutfitData>>(AssetName)
+            this.Data <- Game1.content.Load<OutfitDataModel>(AssetName)
 
     member private this.OnGameLaunched(e: GameLaunchedEventArgs) =
         _fsApi <- this.Helper.ModRegistry.GetApi<IApi>("PeacefulEnd.FashionSense")
         _cpApi <- this.Helper.ModRegistry.GetApi<IContentPatcherAPI>("Pathoschild.ContentPatcher")
         _cpApi.RegisterToken(this.ModManifest, 
             "CurrentOutfit", 
-            fun () ->
+            System.Func<string[]>(fun () ->
                 if not Context.IsWorldReady then
-                    [ null ]
+                    [| null |]
                 else
                     let outfitPair = _fsApi.GetCurrentOutfitId()
-                    [ if outfitPair.Key then outfitPair.Value else null ]
+                    [| if outfitPair.Key then outfitPair.Value else null |]
+            )
         )
 
     member private this.OnTimeChanged(e: TimeChangedEventArgs) =
         if e.NewTime % 100 = 0 then this.LoadData(e)
-
+        
+    member val private LastEvent: Event = null with get, set
+    
     member private this.OnUpdateTicked(e: UpdateTickedEventArgs) =
-        if _lastEvent <> null && Game1.CurrentEvent = null then this.LoadData(e)
-        _lastEvent <- Game1.CurrentEvent
+        if this.LastEvent <> null && Game1.CurrentEvent = null then this.LoadData(e)
+        this.LastEvent <- Game1.CurrentEvent
 
     member private this.OnAssetRequested(e: AssetRequestedEventArgs) =
-        if e.Name.IsEquivalentTo(AssetName) then
-            e.LoadFrom(fun() -> 
-                let baseData = new Dictionary<System.String, OutfitData>()
-                let baseOutfitData = new OutfitData(System.String.Empty)
-                baseData.["RequestedOutfit"] <- baseOutfitData
-                baseData
+        if e <> null && e.Name <> null && e.Name.IsEquivalentTo(AssetName) then
+            e.LoadFrom(System.Func<obj>(fun() -> 
+                let baseData = new OutfitDataModel()
+                baseData.["RequestedOutfit"] <- new OutfitData(String.Empty)
+                baseData)
             , AssetLoadPriority.Medium)
 
+    member private this.RequestedOutfitId: string = this.Data["RequestedOutfit"].OutfitId
+            
     member private this.OnAssetReady(e: AssetReadyEventArgs) =
-        if e.Name.IsEquivalentTo(AssetName) then
-            let requestedOutfitId = _data["RequestedOutfit"].OutfitId
+        if e <> null && e.Name <> null && e.Name.IsEquivalentTo(AssetName) then
+            let requestedOutfitId = this.RequestedOutfitId
             let currentOutfitPair = _fsApi.GetCurrentOutfitId();
             let (valid, correctedId) = IsValid(requestedOutfitId)
             if valid then
