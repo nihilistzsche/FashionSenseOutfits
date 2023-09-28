@@ -46,20 +46,16 @@ type public FashionSenseOutfits() =
             let correctedId = outfitIds.FirstOrDefault(fun outfitId -> outfitId.Equals(requestedOutfitId, StringComparison.OrdinalIgnoreCase))
             (correctedId <> null, correctedId)
 
-    let helper = base.Helper
-    let modManifest = base.ModManifest
-    let monitor = base.Monitor
-
-    let LoadData(e: System.Object) =
+    member private this.LoadData(e: System.Object) =
         let isLocal = e.GetType().GetProperty("IsLocalPlayer")
         if isLocal = null || isLocal.GetValue(e) :?> bool then
-            helper.GameContent.InvalidateCache(AssetName) |> ignore
+            this.Helper.GameContent.InvalidateCache(AssetName) |> ignore
             _data <- Game1.content.Load<Dictionary<System.String, OutfitData>>(AssetName)
 
-    let OnGameLaunched(e: GameLaunchedEventArgs) =
-        _fsApi <- helper.ModRegistry.GetApi<IApi>("PeacefulEnd.FashionSense")
-        _cpApi <- helper.ModRegistry.GetApi<IContentPatcherAPI>("Pathoschild.ContentPatcher")
-        _cpApi.RegisterToken(modManifest, 
+    member private this.OnGameLaunched(e: GameLaunchedEventArgs) =
+        _fsApi <- this.Helper.ModRegistry.GetApi<IApi>("PeacefulEnd.FashionSense")
+        _cpApi <- this.Helper.ModRegistry.GetApi<IContentPatcherAPI>("Pathoschild.ContentPatcher")
+        _cpApi.RegisterToken(this.ModManifest, 
             "CurrentOutfit", 
             fun () ->
                 if not Context.IsWorldReady then
@@ -69,14 +65,14 @@ type public FashionSenseOutfits() =
                     [ if outfitPair.Key then outfitPair.Value else null ]
         )
 
-    let OnTimeChanged(e: TimeChangedEventArgs) =
-        if e.NewTime % 100 = 0 then LoadData(e)
+    member private this.OnTimeChanged(e: TimeChangedEventArgs) =
+        if e.NewTime % 100 = 0 then this.LoadData(e)
 
-    let OnUpdateTicked(e: UpdateTickedEventArgs) =
-        if _lastEvent <> null && Game1.CurrentEvent = null then LoadData(e)
+    member private this.OnUpdateTicked(e: UpdateTickedEventArgs) =
+        if _lastEvent <> null && Game1.CurrentEvent = null then this.LoadData(e)
         _lastEvent <- Game1.CurrentEvent
 
-    let OnAssetRequested(e: AssetRequestedEventArgs) =
+    member private this.OnAssetRequested(e: AssetRequestedEventArgs) =
         if e.Name.IsEquivalentTo(AssetName) then
             e.LoadFrom(fun() -> 
                 let baseData = new Dictionary<System.String, OutfitData>()
@@ -85,30 +81,27 @@ type public FashionSenseOutfits() =
                 baseData
             , AssetLoadPriority.Medium)
 
-    let OnAssetReady(e: AssetReadyEventArgs) =
+    member private this.OnAssetReady(e: AssetReadyEventArgs) =
         if e.Name.IsEquivalentTo(AssetName) then
             let requestedOutfitId = _data["RequestedOutfit"].OutfitId
             let currentOutfitPair = _fsApi.GetCurrentOutfitId();
             let (valid, correctedId) = IsValid(requestedOutfitId)
             if valid then
                 if not currentOutfitPair.Key || correctedId <> currentOutfitPair.Value then
-                    monitor.Log($"Applying outfit with ID {correctedId} via Fashion Sense API...")
-                    _fsApi.SetCurrentOutfitId(correctedId, modManifest) |> ignore
+                    this.Monitor.Log($"Applying outfit with ID {correctedId} via Fashion Sense API...")
+                    _fsApi.SetCurrentOutfitId(correctedId, this.ModManifest) |> ignore
                 else
-                    monitor.Log($"Skipping because the outfit with ID {correctedId} is already equipped.")
+                    this.Monitor.Log($"Skipping because the outfit with ID {correctedId} is already equipped.")
             else
-                monitor.Log($"Given outfit with ID {requestedOutfitId} is invalid.")
+                this.Monitor.Log($"Given outfit with ID {requestedOutfitId} is invalid.")
 
     override this.Entry(helper: IModHelper) =
-        helper.Events.GameLoop.GameLaunched.Add(OnGameLaunched)
-        helper.Events.GameLoop.SaveLoaded.Add(LoadData)
-        helper.Events.GameLoop.DayStarted.Add(LoadData)
-        helper.Events.GameLoop.TimeChanged.Add(OnTimeChanged)
-        helper.Events.GameLoop.UpdateTicked.Add(OnUpdateTicked)
-        helper.Events.Player.Warped.Add(LoadData)
-        helper.Events.Content.AssetRequested.Add(OnAssetRequested)
-        helper.Events.Content.AssetReady.Add(OnAssetReady)
-
-   
-
+        helper.Events.GameLoop.GameLaunched.Add(this.OnGameLaunched)
+        helper.Events.GameLoop.SaveLoaded.Add(this.LoadData)
+        helper.Events.GameLoop.DayStarted.Add(this.LoadData)
+        helper.Events.GameLoop.TimeChanged.Add(this.OnTimeChanged)
+        helper.Events.GameLoop.UpdateTicked.Add(this.OnUpdateTicked)
+        helper.Events.Player.Warped.Add(this.LoadData)
+        helper.Events.Content.AssetRequested.Add(this.OnAssetRequested)
+        helper.Events.Content.AssetReady.Add(this.OnAssetReady)
 
