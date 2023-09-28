@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Nihilistzsche
+﻿// Copyright (C) 2023 Nihilistzsche
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -13,9 +13,16 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System.Text;
+
 namespace FashionSenseOutfits.Models
-
-type internal OutfitData(?outfitId: System.String) =
-    let _outfitId = defaultArg outfitId System.String.Empty
-    member val OutfitId = _outfitId with get, set
-
+{
+    public class OutfitData
+    {
+        public OutfitData(string outfitId)
+        {
+            OutfitId = outfitId;
+        }
+        public string OutfitId { get; set; }
+    }
+}

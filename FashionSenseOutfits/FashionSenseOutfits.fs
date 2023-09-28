@@ -80,7 +80,7 @@ type public FashionSenseOutfits() =
         if e <> null && e.Name <> null && e.Name.IsEquivalentTo(AssetName) then
             e.LoadFrom(System.Func<obj>(fun() -> 
                 let baseData = new OutfitDataModel()
-                baseData.["RequestedOutfit"] <- new OutfitData(String.Empty)
+                baseData["RequestedOutfit"] <- new OutfitData(String.Empty)
                 baseData)
             , AssetLoadPriority.Medium)
 
