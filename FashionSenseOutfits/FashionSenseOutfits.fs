@@ -51,8 +51,7 @@ type public FashionSenseOutfits() =
     member private this.LoadData(e: System.Object) =
         let isLocal = e.GetType().GetProperty("IsLocalPlayer")
         if isLocal = null || isLocal.GetValue(e) :?> bool then
-            this.Helper.GameContent.InvalidateCache(AssetName) |> ignore
-
+            this._data <- Game1.content.Load<OutfitDataModel>(AssetName)
     member private this.OnGameLaunched(e: GameLaunchedEventArgs) =
         _fsApi <- this.Helper.ModRegistry.GetApi<IApi>("PeacefulEnd.FashionSense")
         _cpApi <- this.Helper.ModRegistry.GetApi<IContentPatcherAPI>("Pathoschild.ContentPatcher")
@@ -66,7 +65,7 @@ type public FashionSenseOutfits() =
                     [| if outfitPair.Key then outfitPair.Value else null |]
             )
         )
-        this._data = Game1.content.Load<OutfitDataModel>(AssetName) |> ignore
+        Game1.content.Load<OutfitDataModel>(AssetName) |> ignore
 
     member val private LastEvent: Event = null with get, set
 
@@ -117,6 +116,7 @@ type public FashionSenseOutfits() =
         
     member private this.OnAssetReady(e: AssetReadyEventArgs) =
         if e <> null && e.Name <> null && e.Name.IsEquivalentTo(AssetName) then
+            this.LoadData(e)
             this.UpdateOutfit()
             
     override this.Entry(helper: IModHelper) =
