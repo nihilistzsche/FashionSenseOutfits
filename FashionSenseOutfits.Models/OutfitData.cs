@@ -13,10 +13,16 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System.Text;
+
 namespace FashionSenseOutfits.Models
 {
-    internal class OutfitData
+    public class OutfitData
     {
+        public OutfitData(string outfitId)
+        {
+            OutfitId = outfitId;
+        }
         public string OutfitId { get; set; }
     }
 }
