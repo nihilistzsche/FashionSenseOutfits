@@ -399,3 +399,6 @@ FodyWeavers.xsd
 
 # JetBrains Idea
 .idea/
+
+# Mod Releases
+_releases/
