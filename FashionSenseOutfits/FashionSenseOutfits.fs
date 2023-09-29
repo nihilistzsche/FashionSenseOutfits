@@ -33,6 +33,7 @@ type private OutfitDataModel = Dictionary<string, OutfitData>
 
 type public FashionSenseOutfits() =
     inherit Mod()
+        
     let AssetName: string = "nihilistzsche.FashionSenseOutfits/Outfits"
     let mutable _fsApi: IApi = null
     let mutable _cpApi: IContentPatcherAPI = null
@@ -45,13 +46,12 @@ type public FashionSenseOutfits() =
             let correctedId = outfitIds.FirstOrDefault(fun outfitId -> outfitId.Equals(requestedOutfitId, StringComparison.OrdinalIgnoreCase))
             (correctedId <> null, correctedId)
             
-    member val private Data: OutfitDataModel = null with get, set
-            
+    member val private _data = null with get, set
+    
     member private this.LoadData(e: System.Object) =
         let isLocal = e.GetType().GetProperty("IsLocalPlayer")
         if isLocal = null || isLocal.GetValue(e) :?> bool then
             this.Helper.GameContent.InvalidateCache(AssetName) |> ignore
-            this.Data <- Game1.content.Load<OutfitDataModel>(AssetName)
 
     member private this.OnGameLaunched(e: GameLaunchedEventArgs) =
         _fsApi <- this.Helper.ModRegistry.GetApi<IApi>("PeacefulEnd.FashionSense")
@@ -66,39 +66,54 @@ type public FashionSenseOutfits() =
                     [| if outfitPair.Key then outfitPair.Value else null |]
             )
         )
+        this._data = Game1.content.Load<OutfitDataModel>(AssetName) |> ignore
 
     member val private LastEvent: Event = null with get, set
-    
+
     member private this.OnUpdateTicked(e: UpdateTickedEventArgs) =
         if this.LastEvent <> null && Game1.CurrentEvent = null then this.LoadAndUpdate(e)
         this.LastEvent <- Game1.CurrentEvent
 
     member private this.OnAssetRequested(e: AssetRequestedEventArgs) =
         if e <> null && e.Name <> null && e.Name.IsEquivalentTo(AssetName) then
-            e.LoadFrom(System.Func<obj>(fun() -> 
-                let baseData = new OutfitDataModel()
-                baseData["RequestedOutfit"] <- new OutfitData(String.Empty)
+            e.LoadFrom(Func<obj>(fun() -> 
+                let baseData = OutfitDataModel()
+                baseData["RequestedOutfit"] <- OutfitData(String.Empty)
                 baseData)
             , AssetLoadPriority.Medium)
 
-    member private this.RequestedOutfitId: string = this.Data["RequestedOutfit"].OutfitId
-            
-    member private this.UpdateOutfit() =
-        let requestedOutfitId = this.RequestedOutfitId
-        let currentOutfitPair = _fsApi.GetCurrentOutfitId();
-        let (valid, correctedId) = IsValid(requestedOutfitId)
-        if valid then
-            if not currentOutfitPair.Key || correctedId <> currentOutfitPair.Value then
-                this.Monitor.Log($"Applying outfit with ID {correctedId} via Fashion Sense API...")
-                _fsApi.SetCurrentOutfitId(correctedId, this.ModManifest) |> ignore
-            else
-                this.Monitor.Log($"Skipping because the outfit with ID {correctedId} is already equipped.")
+    member private this.GetRequestedOutfitId() =
+        if this._data <> null && this._data.ContainsKey("RequestedOutfit") then
+            this._data["RequestedOutfit"].OutfitId
         else
-            this.Monitor.Log($"Given outfit with ID {requestedOutfitId} is invalid.")
+            null
+    
+    member private this.UpdateOutfit() =
+        let requestedOutfitId = this.GetRequestedOutfitId()
+        if requestedOutfitId <> null then
+            let currentOutfitPair = _fsApi.GetCurrentOutfitId();
+            let valid, correctedId = IsValid(requestedOutfitId)
+            if valid then
+                if not currentOutfitPair.Key || correctedId <> currentOutfitPair.Value then
+                    this.Monitor.Log($"Applying outfit with ID {correctedId} via Fashion Sense API...")
+                    _fsApi.SetCurrentOutfitId(correctedId, this.ModManifest) |> ignore
+                else
+                    this.Monitor.Log($"Skipping because the outfit with ID {correctedId} is already equipped.")
+            else
+                this.Monitor.Log($"Given outfit with ID {requestedOutfitId} is invalid.")
             
     member private this.LoadAndUpdate(e: obj) =
         this.LoadData(e)
-        this.UpdateOutfit()
+        let task = async {
+            let timer = new Timers.Timer(5000)
+            let event = Async.AwaitEvent(timer.Elapsed) |> Async.Ignore
+                
+            timer.Start()
+            Async.RunSynchronously(event)
+            this.UpdateOutfit()
+        }
+                
+        Async.Start(task)
         
     member private this.OnAssetReady(e: AssetReadyEventArgs) =
         if e <> null && e.Name <> null && e.Name.IsEquivalentTo(AssetName) then

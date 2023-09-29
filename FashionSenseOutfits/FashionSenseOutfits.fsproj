@@ -18,22 +18,15 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Models\OutfitData.fs" />
     <Compile Include="FashionSenseOutfits.fs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="manifest.json" />
     <None Include="packages.config" />
-    <None Include="FodyWeavers.xml" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Costura.Fody" Version="5.8.0-alpha0098">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
     <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="4.1.1" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\FashionSenseOutfits.Models\FashionSenseOutfits.Models.csproj" />
   </ItemGroup>
   <Import Project="..\packages\Pathoschild.Stardew.ModBuildConfig.4.1.1\build\Pathoschild.Stardew.ModBuildConfig.targets" Condition="Exists('..\packages\Pathoschild.Stardew.ModBuildConfig.4.1.1\build\Pathoschild.Stardew.ModBuildConfig.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
@@ -42,4 +35,5 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Pathoschild.Stardew.ModBuildConfig.4.1.1\build\Pathoschild.Stardew.ModBuildConfig.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Pathoschild.Stardew.ModBuildConfig.4.1.1\build\Pathoschild.Stardew.ModBuildConfig.targets'))" />
   </Target>
+   
 </Project>
