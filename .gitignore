@@ -401,4 +401,5 @@ FodyWeavers.xsd
 .idea/
 
 # Mod Releases
-_releases/
+_releases/**
+
