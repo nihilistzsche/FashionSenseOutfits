@@ -6,7 +6,8 @@
     <EnableDynamicLoading>true</EnableDynamicLoading>
     <ModZipPath>$(SolutionDir)_releases</ModZipPath>
     <EnableHarmony>false</EnableHarmony>
-    <ILRepackTargetsFile>ILRepack.targets</ILRepackTargetsFile>
+    <SatelliteResourceLanguages>en-US</SatelliteResourceLanguages>
+    <IgnoreModFilePatterns>\.xml$,\.pdb$,FashionSenseOutfits.*\.json$</IgnoreModFilePatterns>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="$(GameModsPath)\FashionSense\FashionSense.dll">
@@ -22,9 +23,13 @@
   <ItemGroup>
     <None Include="manifest.json" />
     <None Include="packages.config" />
+    <None Include="FodyWeavers.xml" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="ILRepack.Lib.MSBuild" Version="2.1.18" />
+    <PackageReference Include="Costura.Fody" Version="5.8.0-alpha0098">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="4.1.1" />
   </ItemGroup>
   <ItemGroup>
