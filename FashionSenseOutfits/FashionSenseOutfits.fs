@@ -67,13 +67,10 @@ type public FashionSenseOutfits() =
             )
         )
 
-    member private this.OnTimeChanged(e: TimeChangedEventArgs) =
-        if e.NewTime % 100 = 0 then this.LoadData(e)
-        
     member val private LastEvent: Event = null with get, set
     
     member private this.OnUpdateTicked(e: UpdateTickedEventArgs) =
-        if this.LastEvent <> null && Game1.CurrentEvent = null then this.LoadData(e)
+        if this.LastEvent <> null && Game1.CurrentEvent = null then this.LoadAndUpdate(e)
         this.LastEvent <- Game1.CurrentEvent
 
     member private this.OnAssetRequested(e: AssetRequestedEventArgs) =
@@ -86,27 +83,33 @@ type public FashionSenseOutfits() =
 
     member private this.RequestedOutfitId: string = this.Data["RequestedOutfit"].OutfitId
             
+    member private this.UpdateOutfit() =
+        let requestedOutfitId = this.RequestedOutfitId
+        let currentOutfitPair = _fsApi.GetCurrentOutfitId();
+        let (valid, correctedId) = IsValid(requestedOutfitId)
+        if valid then
+            if not currentOutfitPair.Key || correctedId <> currentOutfitPair.Value then
+                this.Monitor.Log($"Applying outfit with ID {correctedId} via Fashion Sense API...")
+                _fsApi.SetCurrentOutfitId(correctedId, this.ModManifest) |> ignore
+            else
+                this.Monitor.Log($"Skipping because the outfit with ID {correctedId} is already equipped.")
+        else
+            this.Monitor.Log($"Given outfit with ID {requestedOutfitId} is invalid.")
+            
+    member private this.LoadAndUpdate(e: obj) =
+        this.LoadData(e)
+        this.UpdateOutfit()
+        
     member private this.OnAssetReady(e: AssetReadyEventArgs) =
         if e <> null && e.Name <> null && e.Name.IsEquivalentTo(AssetName) then
-            let requestedOutfitId = this.RequestedOutfitId
-            let currentOutfitPair = _fsApi.GetCurrentOutfitId();
-            let (valid, correctedId) = IsValid(requestedOutfitId)
-            if valid then
-                if not currentOutfitPair.Key || correctedId <> currentOutfitPair.Value then
-                    this.Monitor.Log($"Applying outfit with ID {correctedId} via Fashion Sense API...")
-                    _fsApi.SetCurrentOutfitId(correctedId, this.ModManifest) |> ignore
-                else
-                    this.Monitor.Log($"Skipping because the outfit with ID {correctedId} is already equipped.")
-            else
-                this.Monitor.Log($"Given outfit with ID {requestedOutfitId} is invalid.")
-
+            this.UpdateOutfit()
+            
     override this.Entry(helper: IModHelper) =
         helper.Events.GameLoop.GameLaunched.Add(this.OnGameLaunched)
         helper.Events.GameLoop.SaveLoaded.Add(this.LoadData)
-        helper.Events.GameLoop.DayStarted.Add(this.LoadData)
-        helper.Events.GameLoop.TimeChanged.Add(this.OnTimeChanged)
+        helper.Events.GameLoop.DayStarted.Add(this.LoadAndUpdate)
+        helper.Events.GameLoop.TimeChanged.Add(this.LoadAndUpdate)
         helper.Events.GameLoop.UpdateTicked.Add(this.OnUpdateTicked)
-        helper.Events.Player.Warped.Add(this.LoadData)
+        helper.Events.Player.Warped.Add(this.LoadAndUpdate)
         helper.Events.Content.AssetRequested.Add(this.OnAssetRequested)
         helper.Events.Content.AssetReady.Add(this.OnAssetReady)
-
