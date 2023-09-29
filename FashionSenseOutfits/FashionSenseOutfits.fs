@@ -45,20 +45,19 @@ type public FashionSenseOutfits() =
             let correctedId = outfitIds.FirstOrDefault(fun outfitId -> outfitId.Equals(requestedOutfitId, StringComparison.OrdinalIgnoreCase))
             (correctedId <> null, correctedId)
             
-    member val private Data: OutfitDataModel = null with get, set
+    member val private _data: OutfitDataModel = null with get, set
             
     member private this.LoadData(e: System.Object) =
         let isLocal = e.GetType().GetProperty("IsLocalPlayer")
         if isLocal = null || isLocal.GetValue(e) :?> bool then
-            this.Helper.GameContent.InvalidateCache(AssetName) |> ignore
-            this.Data <- Game1.content.Load<OutfitDataModel>(AssetName)
+            this._data <- Game1.content.Load<OutfitDataModel>(AssetName)
 
     member private this.OnGameLaunched(e: GameLaunchedEventArgs) =
         _fsApi <- this.Helper.ModRegistry.GetApi<IApi>("PeacefulEnd.FashionSense")
         _cpApi <- this.Helper.ModRegistry.GetApi<IContentPatcherAPI>("Pathoschild.ContentPatcher")
         _cpApi.RegisterToken(this.ModManifest, 
             "CurrentOutfit", 
-            System.Func<string[]>(fun () ->
+            Func<string[]>(fun () ->
                 if not Context.IsWorldReady then
                     [| null |]
                 else
@@ -66,6 +65,7 @@ type public FashionSenseOutfits() =
                     [| if outfitPair.Key then outfitPair.Value else null |]
             )
         )
+        Game1.content.Load<OutfitDataModel>(AssetName) |> ignore
 
     member val private LastEvent: Event = null with get, set
     
@@ -75,18 +75,18 @@ type public FashionSenseOutfits() =
 
     member private this.OnAssetRequested(e: AssetRequestedEventArgs) =
         if e <> null && e.Name <> null && e.Name.IsEquivalentTo(AssetName) then
-            e.LoadFrom(System.Func<obj>(fun() -> 
-                let baseData = new OutfitDataModel()
-                baseData["RequestedOutfit"] <- new OutfitData(String.Empty)
+            e.LoadFrom(Func<obj>(fun() -> 
+                let baseData = OutfitDataModel()
+                baseData["RequestedOutfit"] <- OutfitData(String.Empty)
                 baseData)
             , AssetLoadPriority.Medium)
 
-    member private this.RequestedOutfitId: string = this.Data["RequestedOutfit"].OutfitId
+    member private this.RequestedOutfitId: string = this._data["RequestedOutfit"].OutfitId
             
     member private this.UpdateOutfit() =
         let requestedOutfitId = this.RequestedOutfitId
         let currentOutfitPair = _fsApi.GetCurrentOutfitId();
-        let (valid, correctedId) = IsValid(requestedOutfitId)
+        let valid, correctedId = IsValid(requestedOutfitId)
         if valid then
             if not currentOutfitPair.Key || correctedId <> currentOutfitPair.Value then
                 this.Monitor.Log($"Applying outfit with ID {correctedId} via Fashion Sense API...")
@@ -102,6 +102,7 @@ type public FashionSenseOutfits() =
         
     member private this.OnAssetReady(e: AssetReadyEventArgs) =
         if e <> null && e.Name <> null && e.Name.IsEquivalentTo(AssetName) then
+            this.LoadData(e)
             this.UpdateOutfit()
             
     override this.Entry(helper: IModHelper) =
