@@ -102,7 +102,7 @@ type public FashionSenseOutfits() =
         if valid then
             if not currentOutfitPair.Key || correctedId <> currentOutfitPair.Value then
                 _fsApi.SetCurrentOutfitId(correctedId, this.ModManifest) |> ignore
-        else if not (List.exists(fun elem -> elem = requestedOutfitId) this._seenInvalids) then
+        else if not (List.exists(fun elem -> elem = requestedOutfitId) this._seenInvalids) && requestedOutfitId <> "" then
             this._seenInvalids <- requestedOutfitId :: this._seenInvalids
             this.Monitor.Log($"Given outfit with ID {requestedOutfitId} is invalid.")
             
