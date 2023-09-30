@@ -5,7 +5,7 @@ It will do nothing on its own, you must have an additional Content Patcher conte
 
 You can change your outfit at the start of a new day, when traveling to a new location, or at a certain time.
 
-In addition, a Content Patcher token at ```{{nihilistzsche.FashionSenseOutfits/CurrentOutfit}}``` that returns the currently equipped outfit, which can be used to synergize with other Content Patcher mods.
+In addition, a Content Patcher token at ```{{nihilistzsche.FashionSenseOutfits/CurrentOutfit}}``` is provided that returns the currently equipped outfit, which can be used to synergize with other Content Patcher mods.
 
 You can see an example mod showing how to set a seasonal outfit [here](https://github.com/nihilistzsche/-CP-Seasonal-Fashion-Sense-Outfits), which you can download and modify as necessary.
 
