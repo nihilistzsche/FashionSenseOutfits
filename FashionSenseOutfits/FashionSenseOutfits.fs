@@ -18,6 +18,7 @@ namespace FashionSenseOutfits
 open System
 open System.Collections.Generic
 open System.Linq
+open Microsoft.FSharp.Collections
 
 open FashionSense.Framework.Interfaces.API
 open ContentPatcher
@@ -46,8 +47,10 @@ type public FashionSenseOutfits() =
             (correctedId <> null, correctedId)
             
     member val private _data: OutfitDataModel = null with get, set
-            
-    member private this.LoadData(e: System.Object) =
+    
+    member val private _cpConditionsReady = false with get, set
+    
+    member private this.LoadData(e: obj) =
         let isLocal = e.GetType().GetProperty("IsLocalPlayer")
         if isLocal = null || isLocal.GetValue(e) :?> bool then
             this._data <- Game1.content.Load<OutfitDataModel>(AssetName)
@@ -65,13 +68,18 @@ type public FashionSenseOutfits() =
                     [| if outfitPair.Key then outfitPair.Value else null |]
             )
         )
-        Game1.content.Load<OutfitDataModel>(AssetName) |> ignore
-
-    member val private LastEvent: Event = null with get, set
+        
+    member val private _lastEvent: Event = null with get, set
     
     member private this.OnUpdateTicked(e: UpdateTickedEventArgs) =
-        if this.LastEvent <> null && Game1.CurrentEvent = null then this.LoadAndUpdate(e)
-        this.LastEvent <- Game1.CurrentEvent
+        let mutable _load = false
+        if this._lastEvent <> null && Game1.CurrentEvent = null then _load <- true
+        if not this._cpConditionsReady && _cpApi.IsConditionsApiReady then
+            this._cpConditionsReady <- true
+            _load <- true
+        if _load then
+            this.LoadData(e)
+        this._lastEvent <- Game1.CurrentEvent
 
     member private this.OnAssetRequested(e: AssetRequestedEventArgs) =
         if e <> null && e.Name <> null && e.Name.IsEquivalentTo(AssetName) then
@@ -81,36 +89,32 @@ type public FashionSenseOutfits() =
                 baseData)
             , AssetLoadPriority.Medium)
 
-    member private this.RequestedOutfitId: string = this._data["RequestedOutfit"].OutfitId
-            
+    member private this._requestedOutfitId: string =
+        this._data <- Game1.content.Load<OutfitDataModel>(AssetName)
+        this._data["RequestedOutfit"].OutfitId
+           
+    member val private _seenInvalids = [] with get, set
+    
     member private this.UpdateOutfit() =
-        let requestedOutfitId = this.RequestedOutfitId
+        let requestedOutfitId = this._requestedOutfitId
         let currentOutfitPair = _fsApi.GetCurrentOutfitId();
         let valid, correctedId = IsValid(requestedOutfitId)
         if valid then
             if not currentOutfitPair.Key || correctedId <> currentOutfitPair.Value then
-                this.Monitor.Log($"Applying outfit with ID {correctedId} via Fashion Sense API...")
                 _fsApi.SetCurrentOutfitId(correctedId, this.ModManifest) |> ignore
-            else
-                this.Monitor.Log($"Skipping because the outfit with ID {correctedId} is already equipped.")
-        else
+        else if not (List.exists(fun elem -> elem = requestedOutfitId) this._seenInvalids) then
+            this._seenInvalids <- requestedOutfitId :: this._seenInvalids
             this.Monitor.Log($"Given outfit with ID {requestedOutfitId} is invalid.")
             
-    member private this.LoadAndUpdate(e: obj) =
-        this.LoadData(e)
-        this.UpdateOutfit()
-        
     member private this.OnAssetReady(e: AssetReadyEventArgs) =
         if e <> null && e.Name <> null && e.Name.IsEquivalentTo(AssetName) then
-            this.LoadData(e)
             this.UpdateOutfit()
             
     override this.Entry(helper: IModHelper) =
         helper.Events.GameLoop.GameLaunched.Add(this.OnGameLaunched)
-        helper.Events.GameLoop.SaveLoaded.Add(this.LoadData)
-        helper.Events.GameLoop.DayStarted.Add(this.LoadAndUpdate)
-        helper.Events.GameLoop.TimeChanged.Add(this.LoadAndUpdate)
+        helper.Events.GameLoop.DayStarted.Add(this.LoadData)
+        helper.Events.GameLoop.TimeChanged.Add(this.LoadData)
         helper.Events.GameLoop.UpdateTicked.Add(this.OnUpdateTicked)
-        helper.Events.Player.Warped.Add(this.LoadAndUpdate)
+        helper.Events.Player.Warped.Add(this.LoadData)
         helper.Events.Content.AssetRequested.Add(this.OnAssetRequested)
         helper.Events.Content.AssetReady.Add(this.OnAssetReady)

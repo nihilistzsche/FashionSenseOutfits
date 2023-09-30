@@ -13,16 +13,21 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System.Text;
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("FashionSenseOutfits")]
 
 namespace FashionSenseOutfits.Models
 {
-    public class OutfitData
+    // ReSharper disable once UnusedType.Global
+    internal class OutfitData
     {
         public OutfitData(string outfitId)
         {
-            OutfitId = outfitId;
+            this.OutfitId = outfitId;
         }
+
+        // ReSharper disable once UnusedAutoPropertyAccessor.Global
         public string OutfitId { get; set; }
     }
 }

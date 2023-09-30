@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <EnableDynamicLoading>true</EnableDynamicLoading>
     <ModZipPath>$(SolutionDir)_releases</ModZipPath>
@@ -30,11 +30,24 @@
   <ItemGroup>
     <ProjectReference Include="..\FashionSenseOutfits.Models\FashionSenseOutfits.Models.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <GlobalAnalyzerConfigFiles Include="fsharplint.json" />
+  </ItemGroup>
   <Import Project="..\packages\Pathoschild.Stardew.ModBuildConfig.4.1.1\build\Pathoschild.Stardew.ModBuildConfig.targets" Condition="Exists('..\packages\Pathoschild.Stardew.ModBuildConfig.4.1.1\build\Pathoschild.Stardew.ModBuildConfig.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Pathoschild.Stardew.ModBuildConfig.4.1.1\build\Pathoschild.Stardew.ModBuildConfig.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Pathoschild.Stardew.ModBuildConfig.4.1.1\build\Pathoschild.Stardew.ModBuildConfig.targets'))" />
+  </Target>
+  <PropertyGroup>
+    <FSharpLint Condition="'$(FSharpList)' == ''">$(DOTNET_ROOT)/tools/dotnet-fsharplint</FSharpLint> 
+  </PropertyGroup>
+  <Target Name="FSharpLint"  Condition="Exists($(FSharpLint))" AfterTargets="BeforeBuild">
+    <Exec 
+            Command="$(FSharpLint) -f msbuild lint --lint-config $(MSBuildThisFileDirectory)/fsharplint.json $(MSBuildProjectFullPath)"
+            ConsoleToMSBuild="true"
+            IgnoreExitCode="false"
+    />
   </Target>
 </Project>
