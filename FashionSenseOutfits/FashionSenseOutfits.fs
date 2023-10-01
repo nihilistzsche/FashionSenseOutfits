@@ -35,10 +35,10 @@ type private OutfitDataModel = Dictionary<string, OutfitData>
 type public FashionSenseOutfits() =
     inherit Mod()
     let __assetName: string = "nihilistzsche.FashionSenseOutfits/Outfits"
-    let mutable _fsApi: IApi = null
-    let mutable _cpApi: IContentPatcherAPI = null
+    static let mutable _fsApi: IApi = null
+    static let mutable _cpApi: IContentPatcherAPI = null
     
-    let IsValid(requestedOutfitId: string): bool*string =
+    static let IsValid(requestedOutfitId: string): bool*string =
         if String.IsNullOrEmpty(requestedOutfitId) then
             (false, null)
         else
@@ -71,6 +71,9 @@ type public FashionSenseOutfits() =
         
     member val private _lastEvent: Event = null with get, set
     
+    member inline private _.ValidateAsset<'T when 'T : (member Name : IAssetName)>(e: 'T) =
+        e.Name <> null && e.Name.IsEquivalentTo(__assetName)
+
     member private this.OnUpdateTicked(e: UpdateTickedEventArgs) =
         if (this._lastEvent <> null && Game1.CurrentEvent = null) || (not this._cpConditionsReady && _cpApi.IsConditionsApiReady) then
             if not this._cpConditionsReady then this._cpConditionsReady <- _cpApi.IsConditionsApiReady
@@ -78,11 +81,8 @@ type public FashionSenseOutfits() =
         this._lastEvent <- Game1.CurrentEvent
 
     member private this.OnAssetRequested(e: AssetRequestedEventArgs) =
-        if e <> null && e.Name <> null && e.Name.IsEquivalentTo(__assetName) then
-            e.LoadFrom(Func<obj>(fun() -> 
-                OutfitDataModel([ KeyValuePair<string,OutfitData>("RequestedOutfit", OutfitData(String.Empty)) ])
-            )
-            , AssetLoadPriority.Medium)
+        if this.ValidateAsset(e) then
+            e.LoadFrom((fun() -> OutfitDataModel([ KeyValuePair<string,OutfitData>("RequestedOutfit", OutfitData(String.Empty)) ]) :> obj), AssetLoadPriority.Medium)
 
     member val private _seenInvalids = [] with get, set
     
@@ -98,7 +98,7 @@ type public FashionSenseOutfits() =
             this.Monitor.Log($"Given outfit with ID {requestedOutfitId} is invalid.")
             
     member private this.OnAssetReady(e: AssetReadyEventArgs) =
-        if e <> null && e.Name <> null && e.Name.IsEquivalentTo(__assetName) then
+        if this.ValidateAsset(e) then
             this._data <- Game1.content.Load<OutfitDataModel>(__assetName)
             this.UpdateOutfit()
             
