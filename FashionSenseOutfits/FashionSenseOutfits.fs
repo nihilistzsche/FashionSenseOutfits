@@ -23,21 +23,21 @@ open Microsoft.FSharp.Collections
 open FashionSense.Framework.Interfaces.API
 open ContentPatcher
 
-open FashionSenseOutfits.Models
-
 open StardewModdingAPI
 open StardewModdingAPI.Events
 
 open StardewValley
 
+open FashionSenseOutfits.Models
+
 type private OutfitDataModel = Dictionary<string, OutfitData>
 
 type public FashionSenseOutfits() =
     inherit Mod()
-    let AssetName: string = "nihilistzsche.FashionSenseOutfits/Outfits"
+    let __assetName: string = "nihilistzsche.FashionSenseOutfits/Outfits"
     let mutable _fsApi: IApi = null
     let mutable _cpApi: IContentPatcherAPI = null
-
+    
     let IsValid(requestedOutfitId: string): bool*string =
         if String.IsNullOrEmpty(requestedOutfitId) then
             (false, null)
@@ -50,10 +50,10 @@ type public FashionSenseOutfits() =
     
     member val private _cpConditionsReady = false with get, set
     
-    member private this.LoadData(e: obj) =
+    member private this.RequestData(e: obj) =
         let isLocal = e.GetType().GetProperty("IsLocalPlayer")
         if isLocal = null || isLocal.GetValue(e) :?> bool then
-            this._data <- Game1.content.Load<OutfitDataModel>(AssetName)
+            Game1.content.Load<OutfitDataModel>(__assetName) |> ignore
 
     member private this.OnGameLaunched(e: GameLaunchedEventArgs) =
         _fsApi <- this.Helper.ModRegistry.GetApi<IApi>("PeacefulEnd.FashionSense")
@@ -72,31 +72,22 @@ type public FashionSenseOutfits() =
     member val private _lastEvent: Event = null with get, set
     
     member private this.OnUpdateTicked(e: UpdateTickedEventArgs) =
-        let mutable _load = false
-        if this._lastEvent <> null && Game1.CurrentEvent = null then _load <- true
-        if not this._cpConditionsReady && _cpApi.IsConditionsApiReady then
-            this._cpConditionsReady <- true
-            _load <- true
-        if _load then
-            this.LoadData(e)
+        if (this._lastEvent <> null && Game1.CurrentEvent = null) || (not this._cpConditionsReady && _cpApi.IsConditionsApiReady) then
+            if not this._cpConditionsReady then this._cpConditionsReady <- _cpApi.IsConditionsApiReady
+            this.RequestData(e)
         this._lastEvent <- Game1.CurrentEvent
 
     member private this.OnAssetRequested(e: AssetRequestedEventArgs) =
-        if e <> null && e.Name <> null && e.Name.IsEquivalentTo(AssetName) then
+        if e <> null && e.Name <> null && e.Name.IsEquivalentTo(__assetName) then
             e.LoadFrom(Func<obj>(fun() -> 
-                let baseData = OutfitDataModel()
-                baseData["RequestedOutfit"] <- OutfitData(String.Empty)
-                baseData)
+                OutfitDataModel([ KeyValuePair<string,OutfitData>("RequestedOutfit", OutfitData(String.Empty)) ])
+            )
             , AssetLoadPriority.Medium)
 
-    member private this._requestedOutfitId: string =
-        this._data <- Game1.content.Load<OutfitDataModel>(AssetName)
-        this._data["RequestedOutfit"].OutfitId
-           
     member val private _seenInvalids = [] with get, set
     
     member private this.UpdateOutfit() =
-        let requestedOutfitId = this._requestedOutfitId
+        let requestedOutfitId = this._data["RequestedOutfit"].OutfitId
         let currentOutfitPair = _fsApi.GetCurrentOutfitId();
         let valid, correctedId = IsValid(requestedOutfitId)
         if valid then
@@ -107,14 +98,15 @@ type public FashionSenseOutfits() =
             this.Monitor.Log($"Given outfit with ID {requestedOutfitId} is invalid.")
             
     member private this.OnAssetReady(e: AssetReadyEventArgs) =
-        if e <> null && e.Name <> null && e.Name.IsEquivalentTo(AssetName) then
+        if e <> null && e.Name <> null && e.Name.IsEquivalentTo(__assetName) then
+            this._data <- Game1.content.Load<OutfitDataModel>(__assetName)
             this.UpdateOutfit()
             
     override this.Entry(helper: IModHelper) =
         helper.Events.GameLoop.GameLaunched.Add(this.OnGameLaunched)
-        helper.Events.GameLoop.DayStarted.Add(this.LoadData)
-        helper.Events.GameLoop.TimeChanged.Add(this.LoadData)
+        helper.Events.GameLoop.DayStarted.Add(this.RequestData)
+        helper.Events.GameLoop.TimeChanged.Add(this.RequestData)
         helper.Events.GameLoop.UpdateTicked.Add(this.OnUpdateTicked)
-        helper.Events.Player.Warped.Add(this.LoadData)
+        helper.Events.Player.Warped.Add(this.RequestData)
         helper.Events.Content.AssetRequested.Add(this.OnAssetRequested)
         helper.Events.Content.AssetReady.Add(this.OnAssetReady)
