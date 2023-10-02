@@ -25,6 +25,8 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="ILRepack" Version="2.0.18" />
+    <PackageReference Include="ILRepack.Lib.MSBuild" Version="2.1.18" />
     <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="4.1.1" />
   </ItemGroup>
   <ItemGroup>
@@ -32,6 +34,7 @@
   </ItemGroup>
   <ItemGroup>
     <GlobalAnalyzerConfigFiles Include="fsharplint.json" />
+    <ILRepackInputAssemblies Include="$(OutputPath)$(AssemblyName).dll;$(OutputPath)$(AssemblyName).Models.dll" />
   </ItemGroup>
   <Import Project="..\packages\Pathoschild.Stardew.ModBuildConfig.4.1.1\build\Pathoschild.Stardew.ModBuildConfig.targets" Condition="Exists('..\packages\Pathoschild.Stardew.ModBuildConfig.4.1.1\build\Pathoschild.Stardew.ModBuildConfig.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
@@ -48,6 +51,24 @@
             Command="$(FSharpLint) -f msbuild lint --lint-config $(MSBuildThisFileDirectory)/fsharplint.json $(MSBuildProjectFullPath)"
             ConsoleToMSBuild="true"
             IgnoreExitCode="false"
+    />
+  </Target>
+  <Target Name="DeployMod" AfterTargets="ILRepack">
+    <DeployModTask
+            ModDllName="$(TargetName)"
+            ModFolderName="$(ModFolderName)"
+            ModZipPath="$(ModZipPath)"
+
+            EnableModDeploy="$(EnableModDeploy)"
+            EnableModZip="$(EnableModZip)"
+
+            ProjectDir="$(ProjectDir)"
+            TargetDir="$(TargetDir)"
+            GameModsDir="$(GameModsPath)"
+            IgnoreModFilePatterns="$(IgnoreModFilePatterns)"
+            IgnoreModFilePaths="$(IgnoreModFilePaths)"
+
+            BundleExtraAssemblies="$(BundleExtraAssemblies)"
     />
   </Target>
 </Project>

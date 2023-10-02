@@ -59,9 +59,9 @@ type public FashionSenseOutfits() =
 
     member private this.UpdateOutfit() =
         let requestedOutfitId = this._data["RequestedOutfit"].OutfitId
-        let currentOutfitPair = __fsApi.GetCurrentOutfitId();
         let valid, correctedId = this.IsValid(requestedOutfitId)
         if valid then
+            let currentOutfitPair = __fsApi.GetCurrentOutfitId();
             if not currentOutfitPair.Key || correctedId <> currentOutfitPair.Value then
                 __fsApi.SetCurrentOutfitId(correctedId, this.ModManifest) |> ignore
         else if not (List.exists(fun elem -> elem = requestedOutfitId) this._seenInvalids) && requestedOutfitId <> "" then
