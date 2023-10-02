@@ -34,11 +34,15 @@ type private OutfitDataModel = Dictionary<string, OutfitData>
 
 type public FashionSenseOutfits() =
     inherit Mod()
-    let __assetName: string = "nihilistzsche.FashionSenseOutfits/Outfits"
+    static let __assetName: string = "nihilistzsche.FashionSenseOutfits/Outfits"
     static let mutable _fsApi: IApi = null
     static let mutable _cpApi: IContentPatcherAPI = null
+    member val private _data: OutfitDataModel = null with get, set 
+    member val private _cpConditionsReady = false with get, set
+    member val private _lastEvent: Event = null with get, set
+    member val private _seenInvalids = [] with get, set
     
-    static let IsValid(requestedOutfitId: string): bool*string =
+    member private _.IsValid(requestedOutfitId: string): bool*string =
         if String.IsNullOrEmpty(requestedOutfitId) then
             (false, null)
         else
@@ -46,15 +50,27 @@ type public FashionSenseOutfits() =
             let correctedId = outfitIds.FirstOrDefault(fun outfitId -> outfitId.Equals(requestedOutfitId, StringComparison.OrdinalIgnoreCase))
             (correctedId <> null, correctedId)
             
-    member val private _data: OutfitDataModel = null with get, set
     
-    member val private _cpConditionsReady = false with get, set
     
     member private this.RequestData(e: obj) =
         let isLocal = e.GetType().GetProperty("IsLocalPlayer")
         if isLocal = null || isLocal.GetValue(e) :?> bool then
             Game1.content.Load<OutfitDataModel>(__assetName) |> ignore
+    
+    member inline private _.ValidateAsset<'T when 'T : (member Name : IAssetName)>(e: 'T) =
+        e.Name.IsEquivalentTo(__assetName)
 
+    member private this.UpdateOutfit() =
+            let requestedOutfitId = this._data["RequestedOutfit"].OutfitId
+            let currentOutfitPair = _fsApi.GetCurrentOutfitId();
+            let valid, correctedId = this.IsValid(requestedOutfitId)
+            if valid then
+                if not currentOutfitPair.Key || correctedId <> currentOutfitPair.Value then
+                    _fsApi.SetCurrentOutfitId(correctedId, this.ModManifest) |> ignore
+            else if not (List.exists(fun elem -> elem = requestedOutfitId) this._seenInvalids) && requestedOutfitId <> "" then
+                this._seenInvalids <- requestedOutfitId :: this._seenInvalids
+                this.Monitor.Log($"Given outfit with ID {requestedOutfitId} is invalid.")
+    
     member private this.OnGameLaunched(e: GameLaunchedEventArgs) =
         _fsApi <- this.Helper.ModRegistry.GetApi<IApi>("PeacefulEnd.FashionSense")
         _cpApi <- this.Helper.ModRegistry.GetApi<IContentPatcherAPI>("Pathoschild.ContentPatcher")
@@ -68,12 +84,7 @@ type public FashionSenseOutfits() =
                     [| if outfitPair.Key then outfitPair.Value else null |]
             )
         )
-        
-    member val private _lastEvent: Event = null with get, set
     
-    member inline private _.ValidateAsset<'T when 'T : (member Name : IAssetName)>(e: 'T) =
-        e.Name <> null && e.Name.IsEquivalentTo(__assetName)
-
     member private this.OnUpdateTicked(e: UpdateTickedEventArgs) =
         if (this._lastEvent <> null && Game1.CurrentEvent = null) || (not this._cpConditionsReady && _cpApi.IsConditionsApiReady) then
             if not this._cpConditionsReady then this._cpConditionsReady <- _cpApi.IsConditionsApiReady
@@ -84,19 +95,6 @@ type public FashionSenseOutfits() =
         if this.ValidateAsset(e) then
             e.LoadFrom((fun() -> OutfitDataModel([ KeyValuePair<string,OutfitData>("RequestedOutfit", OutfitData(String.Empty)) ]) :> obj), AssetLoadPriority.Medium)
 
-    member val private _seenInvalids = [] with get, set
-    
-    member private this.UpdateOutfit() =
-        let requestedOutfitId = this._data["RequestedOutfit"].OutfitId
-        let currentOutfitPair = _fsApi.GetCurrentOutfitId();
-        let valid, correctedId = IsValid(requestedOutfitId)
-        if valid then
-            if not currentOutfitPair.Key || correctedId <> currentOutfitPair.Value then
-                _fsApi.SetCurrentOutfitId(correctedId, this.ModManifest) |> ignore
-        else if not (List.exists(fun elem -> elem = requestedOutfitId) this._seenInvalids) && requestedOutfitId <> "" then
-            this._seenInvalids <- requestedOutfitId :: this._seenInvalids
-            this.Monitor.Log($"Given outfit with ID {requestedOutfitId} is invalid.")
-            
     member private this.OnAssetReady(e: AssetReadyEventArgs) =
         if this.ValidateAsset(e) then
             this._data <- Game1.content.Load<OutfitDataModel>(__assetName)
