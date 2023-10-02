@@ -34,6 +34,7 @@ type private OutfitDataModel = Dictionary<string, OutfitData>
 
 type public FashionSenseOutfits() =
     inherit Mod()
+
     static let __assetName: string = "nihilistzsche.FashionSenseOutfits/Outfits"
     static let mutable __fsApi: IApi = null
     static let mutable __cpApi: IContentPatcherAPI = null
@@ -88,9 +89,15 @@ type public FashionSenseOutfits() =
             this.RequestData(e)
         this._lastEvent <- Game1.CurrentEvent
 
+    static member inline private KVP<'T,'U>(k: 'T, v: 'U) =
+        KeyValuePair<'T,'U>(k, v)
+
+    member private _.LoadModel: unit -> obj =
+        fun() -> OutfitDataModel([ FashionSenseOutfits.KVP("RequestedOutfit", OutfitData(String.Empty)) ])
+    
     member private this.OnAssetRequested(e: AssetRequestedEventArgs) =
         if this.ValidateAsset(e) then
-            e.LoadFrom((fun() -> OutfitDataModel([ KeyValuePair<string,OutfitData>("RequestedOutfit", OutfitData(String.Empty)) ]) :> obj), AssetLoadPriority.Medium)
+            e.LoadFrom(this.LoadModel, AssetLoadPriority.Medium)
 
     member private this.OnAssetReady(e: AssetReadyEventArgs) =
         if this.ValidateAsset(e) then
