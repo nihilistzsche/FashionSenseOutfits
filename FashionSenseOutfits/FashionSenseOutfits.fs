@@ -46,12 +46,9 @@ type public FashionSenseOutfits() =
         if String.IsNullOrEmpty(requestedOutfitId) then
             (false, null)
         else
-            let outfitIds = _fsApi.GetOutfitIds().Value
-            let correctedId = outfitIds.FirstOrDefault(fun outfitId -> outfitId.Equals(requestedOutfitId, StringComparison.OrdinalIgnoreCase))
+            let correctedId = _fsApi.GetOutfitIds().Value.FirstOrDefault(fun outfitId -> outfitId.Equals(requestedOutfitId, StringComparison.OrdinalIgnoreCase))
             (correctedId <> null, correctedId)
-            
-    
-    
+
     member private this.RequestData(e: obj) =
         let isLocal = e.GetType().GetProperty("IsLocalPlayer")
         if isLocal = null || isLocal.GetValue(e) :?> bool then
@@ -61,15 +58,15 @@ type public FashionSenseOutfits() =
         e.Name.IsEquivalentTo(__assetName)
 
     member private this.UpdateOutfit() =
-            let requestedOutfitId = this._data["RequestedOutfit"].OutfitId
-            let currentOutfitPair = _fsApi.GetCurrentOutfitId();
-            let valid, correctedId = this.IsValid(requestedOutfitId)
-            if valid then
-                if not currentOutfitPair.Key || correctedId <> currentOutfitPair.Value then
-                    _fsApi.SetCurrentOutfitId(correctedId, this.ModManifest) |> ignore
-            else if not (List.exists(fun elem -> elem = requestedOutfitId) this._seenInvalids) && requestedOutfitId <> "" then
-                this._seenInvalids <- requestedOutfitId :: this._seenInvalids
-                this.Monitor.Log($"Given outfit with ID {requestedOutfitId} is invalid.")
+        let requestedOutfitId = this._data["RequestedOutfit"].OutfitId
+        let currentOutfitPair = _fsApi.GetCurrentOutfitId();
+        let valid, correctedId = this.IsValid(requestedOutfitId)
+        if valid then
+            if not currentOutfitPair.Key || correctedId <> currentOutfitPair.Value then
+                _fsApi.SetCurrentOutfitId(correctedId, this.ModManifest) |> ignore
+        else if not (List.exists(fun elem -> elem = requestedOutfitId) this._seenInvalids) && requestedOutfitId <> "" then
+            this._seenInvalids <- requestedOutfitId :: this._seenInvalids
+            this.Monitor.Log($"Given outfit with ID {requestedOutfitId} is invalid.")
     
     member private this.OnGameLaunched(e: GameLaunchedEventArgs) =
         _fsApi <- this.Helper.ModRegistry.GetApi<IApi>("PeacefulEnd.FashionSense")
