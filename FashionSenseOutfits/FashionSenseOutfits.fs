@@ -35,8 +35,8 @@ type private OutfitDataModel = Dictionary<string, OutfitData>
 type public FashionSenseOutfits() =
     inherit Mod()
     static let __assetName: string = "nihilistzsche.FashionSenseOutfits/Outfits"
-    static let mutable _fsApi: IApi = null
-    static let mutable _cpApi: IContentPatcherAPI = null
+    static let mutable __fsApi: IApi = null
+    static let mutable __cpApi: IContentPatcherAPI = null
     member val private _data: OutfitDataModel = null with get, set 
     member val private _cpConditionsReady = false with get, set
     member val private _lastEvent: Event = null with get, set
@@ -46,7 +46,7 @@ type public FashionSenseOutfits() =
         if String.IsNullOrEmpty(requestedOutfitId) then
             (false, null)
         else
-            let correctedId = _fsApi.GetOutfitIds().Value.FirstOrDefault(fun outfitId -> outfitId.Equals(requestedOutfitId, StringComparison.OrdinalIgnoreCase))
+            let correctedId = __fsApi.GetOutfitIds().Value.FirstOrDefault(fun outfitId -> outfitId.Equals(requestedOutfitId, StringComparison.OrdinalIgnoreCase))
             (correctedId <> null, correctedId)
 
     member private this.RequestData(e: obj) =
@@ -59,32 +59,32 @@ type public FashionSenseOutfits() =
 
     member private this.UpdateOutfit() =
         let requestedOutfitId = this._data["RequestedOutfit"].OutfitId
-        let currentOutfitPair = _fsApi.GetCurrentOutfitId();
+        let currentOutfitPair = __fsApi.GetCurrentOutfitId();
         let valid, correctedId = this.IsValid(requestedOutfitId)
         if valid then
             if not currentOutfitPair.Key || correctedId <> currentOutfitPair.Value then
-                _fsApi.SetCurrentOutfitId(correctedId, this.ModManifest) |> ignore
+                __fsApi.SetCurrentOutfitId(correctedId, this.ModManifest) |> ignore
         else if not (List.exists(fun elem -> elem = requestedOutfitId) this._seenInvalids) && requestedOutfitId <> "" then
             this._seenInvalids <- requestedOutfitId :: this._seenInvalids
             this.Monitor.Log($"Given outfit with ID {requestedOutfitId} is invalid.")
     
-    member private this.OnGameLaunched(e: GameLaunchedEventArgs) =
-        _fsApi <- this.Helper.ModRegistry.GetApi<IApi>("PeacefulEnd.FashionSense")
-        _cpApi <- this.Helper.ModRegistry.GetApi<IContentPatcherAPI>("Pathoschild.ContentPatcher")
-        _cpApi.RegisterToken(this.ModManifest, 
+    member private this.OnGameLaunched(_: GameLaunchedEventArgs) =
+        __fsApi <- this.Helper.ModRegistry.GetApi<IApi>("PeacefulEnd.FashionSense")
+        __cpApi <- this.Helper.ModRegistry.GetApi<IContentPatcherAPI>("Pathoschild.ContentPatcher")
+        __cpApi.RegisterToken(this.ModManifest, 
             "CurrentOutfit", 
             Func<string[]>(fun () ->
                 if not Context.IsWorldReady then
                     [| null |]
                 else
-                    let outfitPair = _fsApi.GetCurrentOutfitId()
+                    let outfitPair = __fsApi.GetCurrentOutfitId()
                     [| if outfitPair.Key then outfitPair.Value else null |]
             )
         )
     
     member private this.OnUpdateTicked(e: UpdateTickedEventArgs) =
-        if (this._lastEvent <> null && Game1.CurrentEvent = null) || (not this._cpConditionsReady && _cpApi.IsConditionsApiReady) then
-            if not this._cpConditionsReady then this._cpConditionsReady <- _cpApi.IsConditionsApiReady
+        if (this._lastEvent <> null && Game1.CurrentEvent = null) || (not this._cpConditionsReady && __cpApi.IsConditionsApiReady) then
+            if not this._cpConditionsReady then this._cpConditionsReady <- __cpApi.IsConditionsApiReady
             this.RequestData(e)
         this._lastEvent <- Game1.CurrentEvent
 
