@@ -53,6 +53,7 @@
             IgnoreExitCode="false"
     />
   </Target>
+  <Target Name="AfterBuild"/>
   <Target Name="DeployMod" AfterTargets="ILRepack">
     <DeployModTask
             ModDllName="$(TargetName)"
