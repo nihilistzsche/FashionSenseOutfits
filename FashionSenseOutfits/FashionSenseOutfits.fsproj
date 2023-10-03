@@ -37,39 +37,12 @@
     <ILRepackInputAssemblies Include="$(OutputPath)$(AssemblyName).dll;$(OutputPath)$(AssemblyName).Models.dll" />
   </ItemGroup>
   <Import Project="..\packages\Pathoschild.Stardew.ModBuildConfig.4.1.1\build\Pathoschild.Stardew.ModBuildConfig.targets" Condition="Exists('..\packages\Pathoschild.Stardew.ModBuildConfig.4.1.1\build\Pathoschild.Stardew.ModBuildConfig.targets')" />
+  <Import Project="..\MSBuild\FSharpLint.targets"/>
+  <Import Project="..\MSBuild\DeployMod.targets"/>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Pathoschild.Stardew.ModBuildConfig.4.1.1\build\Pathoschild.Stardew.ModBuildConfig.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Pathoschild.Stardew.ModBuildConfig.4.1.1\build\Pathoschild.Stardew.ModBuildConfig.targets'))" />
-  </Target>
-  <PropertyGroup>
-    <FSharpLint Condition="'$(FSharpList)' == ''">$(DOTNET_ROOT)/tools/dotnet-fsharplint</FSharpLint> 
-  </PropertyGroup>
-  <Target Name="FSharpLint"  Condition="Exists($(FSharpLint))" AfterTargets="BeforeBuild">
-    <Exec 
-            Command="$(FSharpLint) -f msbuild lint --lint-config $(MSBuildThisFileDirectory)/fsharplint.json $(MSBuildProjectFullPath)"
-            ConsoleToMSBuild="true"
-            IgnoreExitCode="false"
-    />
-  </Target>
-  <Target Name="AfterBuild"/>
-  <Target Name="DeployMod" AfterTargets="ILRepack">
-    <DeployModTask
-            ModDllName="$(TargetName)"
-            ModFolderName="$(ModFolderName)"
-            ModZipPath="$(ModZipPath)"
-
-            EnableModDeploy="$(EnableModDeploy)"
-            EnableModZip="$(EnableModZip)"
-
-            ProjectDir="$(ProjectDir)"
-            TargetDir="$(TargetDir)"
-            GameModsDir="$(GameModsPath)"
-            IgnoreModFilePatterns="$(IgnoreModFilePatterns)"
-            IgnoreModFilePaths="$(IgnoreModFilePaths)"
-
-            BundleExtraAssemblies="$(BundleExtraAssemblies)"
-    />
   </Target>
 </Project>
