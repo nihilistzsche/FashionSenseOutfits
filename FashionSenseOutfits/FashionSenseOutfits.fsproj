@@ -33,7 +33,6 @@
     <ProjectReference Include="..\FashionSenseOutfits.Models\FashionSenseOutfits.Models.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <GlobalAnalyzerConfigFiles Include="fsharplint.json" />
     <ILRepackInputAssemblies Include="$(OutputPath)$(AssemblyName).dll;$(OutputPath)$(AssemblyName).Models.dll" />
   </ItemGroup>
   <Import Project="..\packages\Pathoschild.Stardew.ModBuildConfig.4.1.1\build\Pathoschild.Stardew.ModBuildConfig.targets" Condition="Exists('..\packages\Pathoschild.Stardew.ModBuildConfig.4.1.1\build\Pathoschild.Stardew.ModBuildConfig.targets')" />

@@ -4,7 +4,7 @@
     </PropertyGroup>
     <Target Name="FSharpLint"  Condition="Exists($(FSharpLint))" AfterTargets="BeforeBuild">
         <Exec
-                Command="$(FSharpLint) -f msbuild lint --lint-config $(ProjectDir)fsharplint.json $(MSBuildProjectFullPath)"
+                Command="$(FSharpLint) -f msbuild lint $(MSBuildProjectFullPath)"
                 ConsoleToMSBuild="true"
                 IgnoreExitCode="false"
         />
