@@ -48,11 +48,12 @@ type public FashionSenseOutfits() =
             (false, null)
         else
             let correctedId = __fsApi.GetOutfitIds().Value.FirstOrDefault(fun outfitId -> outfitId.Equals(requestedOutfitId, StringComparison.OrdinalIgnoreCase))
-            (correctedId <> null, correctedId)
+            (not (isNull correctedId), correctedId)
 
     member private this.RequestData(e: obj) =
         let isLocal = e.GetType().GetProperty("IsLocalPlayer")
-        if isLocal = null || isLocal.GetValue(e) :?> bool then
+        this.Monitor.Log($"Requesting data with args {e.GetType()}")
+        if isNull isLocal || isLocal.GetValue(e) :?> bool then
             Game1.content.Load<OutfitDataModel>(__assetName) |> ignore
     
     member inline private _.ValidateAsset<'T when 'T : (member Name : IAssetName)>(e: 'T) =
@@ -61,14 +62,16 @@ type public FashionSenseOutfits() =
     member private this.UpdateOutfit() =
         let requestedOutfitId = this._data["RequestedOutfit"].OutfitId
         let valid, correctedId = this.IsValid(requestedOutfitId)
+        this.Monitor.Log($"Checking outfit {requestedOutfitId}")
         if valid then
-            let currentOutfitPair = __fsApi.GetCurrentOutfitId();
+            let currentOutfitPair = __fsApi.GetCurrentOutfitId()
             if not currentOutfitPair.Key || correctedId <> currentOutfitPair.Value then
                 __fsApi.SetCurrentOutfitId(correctedId, this.ModManifest) |> ignore
-        else if not (List.exists(fun elem -> elem = requestedOutfitId) this._seenInvalids) && requestedOutfitId <> "" then
-            this._seenInvalids <- requestedOutfitId :: this._seenInvalids
-            this.Monitor.Log($"Given outfit with ID {requestedOutfitId} is invalid.")
-    
+        else
+            if not (List.exists(fun elem -> elem = requestedOutfitId) this._seenInvalids) && requestedOutfitId <> "" then
+                this._seenInvalids <- requestedOutfitId :: this._seenInvalids
+                this.Monitor.Log($"Given outfit with ID {requestedOutfitId} is invalid.")
+
     member private this.OnGameLaunched(_: GameLaunchedEventArgs) =
         __fsApi <- this.Helper.ModRegistry.GetApi<IApi>("PeacefulEnd.FashionSense")
         __cpApi <- this.Helper.ModRegistry.GetApi<IContentPatcherAPI>("Pathoschild.ContentPatcher")
@@ -84,16 +87,16 @@ type public FashionSenseOutfits() =
         )
     
     member private this.OnUpdateTicked(e: UpdateTickedEventArgs) =
-        if (this._lastEvent <> null && Game1.CurrentEvent = null) || (not this._cpConditionsReady && __cpApi.IsConditionsApiReady) then
+        if (not (isNull this._lastEvent) && isNull Game1.CurrentEvent) || (not this._cpConditionsReady && __cpApi.IsConditionsApiReady) then
             if not this._cpConditionsReady then this._cpConditionsReady <- __cpApi.IsConditionsApiReady
             this.RequestData(e)
         this._lastEvent <- Game1.CurrentEvent
 
-    static member inline private KVP<'T,'U>(k: 'T, v: 'U) =
+    member inline private _.KVP<'T,'U>(k: 'T, v: 'U) =
         KeyValuePair<'T,'U>(k, v)
 
-    member private _.LoadModel: unit -> obj =
-        fun() -> OutfitDataModel([ FashionSenseOutfits.KVP("RequestedOutfit", OutfitData(String.Empty)) ])
+    member private this.LoadModel: unit -> obj =
+        fun() -> OutfitDataModel([ this.KVP("RequestedOutfit", OutfitData(String.Empty)) ])
     
     member private this.OnAssetRequested(e: AssetRequestedEventArgs) =
         if this.ValidateAsset(e) then
@@ -101,9 +104,11 @@ type public FashionSenseOutfits() =
 
     member private this.OnAssetReady(e: AssetReadyEventArgs) =
         if this.ValidateAsset(e) then
-            this._data <- Game1.content.Load<OutfitDataModel>(__assetName)
-            this.UpdateOutfit()
-            
+            let newData = Game1.content.Load<OutfitDataModel>(__assetName)
+            if isNull(this._data) || this._data["RequestedOutfit"].OutfitId <> newData["RequestedOutfit"].OutfitId then
+                this._data <- newData
+                this.UpdateOutfit()
+                
     override this.Entry(helper: IModHelper) =
         helper.Events.GameLoop.GameLaunched.Add(this.OnGameLaunched)
         helper.Events.GameLoop.DayStarted.Add(this.RequestData)
