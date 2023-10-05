@@ -47,9 +47,8 @@ type public FashionSenseOutfits() =
     
     member private this.OnOneSecondUpdateTicked = EventHandler<OneSecondUpdateTickedEventArgs>(
         fun _ _ ->
-            if this._retryCount < 5 then
-                this.UpdateOutfit()
-                this._retryCount <- this._retryCount + 1
+            this._retryCount <- this._retryCount + 1
+            this.UpdateOutfit()
         )
     
     member private this.IsValid(requestedOutfitId: string): bool*string =
