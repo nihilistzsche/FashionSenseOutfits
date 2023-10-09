@@ -95,11 +95,12 @@ type public FashionSenseOutfits() =
         __cpApi.RegisterToken(this.ModManifest, 
             "CurrentOutfit", 
             Func<string[]>(fun () ->
-                if not Context.IsWorldReady then
-                    [| null |]
-                else
+                match Context.IsWorldReady with
+                | true ->
                     let outfitPair = __fsApi.GetCurrentOutfitId()
                     [| if outfitPair.Key then outfitPair.Value else null |]
+                | false ->
+                    [| null |] 
             )
         )
     
