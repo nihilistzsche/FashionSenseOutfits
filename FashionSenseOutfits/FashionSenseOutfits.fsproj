@@ -8,6 +8,12 @@
     <EnableHarmony>false</EnableHarmony>
     <SatelliteResourceLanguages>en-US</SatelliteResourceLanguages>
     <IgnoreModFilePatterns>\.xml$,\.pdb$,FashionSenseOutfits.*\.json$</IgnoreModFilePatterns>
+    <Authors>nihilistzsche</Authors>
+    <Description>FashionSenseOutfits adds a Content Patcher target to set the current Fashion Sense outfit, and a Content Patcher token to retrieve the current Fashion Sense outfit.</Description>
+    <UniqueId>nihilistzsche.$(AssemblyName)</UniqueId>
+    <MinimunApiVersion_Behavior>Update</MinimunApiVersion_Behavior>
+    <Version>1.0.9</Version>
+    <AlwaysSetEntryDll>true</AlwaysSetEntryDll>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="$(GameModsPath)\FashionSense\FashionSense.dll">
@@ -21,12 +27,12 @@
     <Compile Include="FashionSenseOutfits.fs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="manifest.json" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="ILRepack" Version="2.0.18" />
     <PackageReference Include="ILRepack.Lib.MSBuild" Version="2.1.18" />
+    <PackageReference Include="Leclair.Stardew.ModManifestBuilder" Version="2.1.0" />
     <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="4.1.1" />
   </ItemGroup>
   <ItemGroup>
@@ -36,8 +42,8 @@
     <ILRepackInputAssemblies Include="$(OutputPath)$(AssemblyName).dll;$(OutputPath)$(AssemblyName).Models.dll" />
   </ItemGroup>
   <Import Project="..\packages\Pathoschild.Stardew.ModBuildConfig.4.1.1\build\Pathoschild.Stardew.ModBuildConfig.targets" Condition="Exists('..\packages\Pathoschild.Stardew.ModBuildConfig.4.1.1\build\Pathoschild.Stardew.ModBuildConfig.targets')" />
-  <Import Project="..\MSBuild\FSharpLint.targets"/>
-  <Import Project="..\MSBuild\DeployMod.targets"/>
+  <Import Project="..\MSBuild\FSharpLint.targets" />
+  <Import Project="..\MSBuild\DeployMod.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
