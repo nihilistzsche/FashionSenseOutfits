@@ -404,3 +404,4 @@ FodyWeavers.xsd
 _releases/**
 
 FashionSenseOutfits.Models/FashionSenseOutfits.Models.csproj.DotSettings
+FashionSenseOutfits/manifest.json

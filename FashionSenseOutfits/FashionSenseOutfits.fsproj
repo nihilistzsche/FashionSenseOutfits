@@ -11,9 +11,10 @@
     <Authors>nihilistzsche</Authors>
     <Description>FashionSenseOutfits adds a Content Patcher target to set the current Fashion Sense outfit, and a Content Patcher token to retrieve the current Fashion Sense outfit.</Description>
     <UniqueId>nihilistzsche.$(AssemblyName)</UniqueId>
-    <MinimunApiVersion_Behavior>Update</MinimunApiVersion_Behavior>
+    <MinimumApiVersion_Behavior>Update</MinimumApiVersion_Behavior>
     <Version>1.0.9</Version>
     <AlwaysSetEntryDll>true</AlwaysSetEntryDll>
+    <UpdateKeys>Nexus:18384</UpdateKeys>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="$(GameModsPath)\FashionSense\FashionSense.dll">
