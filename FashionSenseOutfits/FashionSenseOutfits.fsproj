@@ -10,7 +10,7 @@
     <IgnoreModFilePatterns>\.xml$,\.pdb$,FashionSenseOutfits.*\.json$</IgnoreModFilePatterns>
     <Authors>nihilistzsche</Authors>
     <Description>FashionSenseOutfits adds a Content Patcher target to set the current Fashion Sense outfit, and a Content Patcher token to retrieve the current Fashion Sense outfit.</Description>
-    <UniqueId>nihilistzsche.$(AssemblyName)</UniqueId>
+    <UniqueId>$(Authors).$(AssemblyName)</UniqueId>
     <MinimumApiVersion_Behavior>Update</MinimumApiVersion_Behavior>
     <Version>1.0.9</Version>
     <AlwaysSetEntryDll>true</AlwaysSetEntryDll>
